@@ -1,0 +1,56 @@
+.MailItem {
+  border-bottom: 1px solid #E2E8F1;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding: 8px;
+  
+  &:hover {
+    background: #F1F5F9;
+  }
+}
+
+.MailItem .rt-Text {
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.MailItem__context--menu {
+  position: absolute;
+  width: 200px;
+  height: 80px;
+  left: 100px;
+  top: 40px;
+  background: white;
+  z-index: 2;
+  display: none;
+}
+
+.ContextMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid #F3F4F6;
+}
+
+.ContextMenu__item {
+  font-size: 14px;
+  padding: 8px;
+  margin: 0;
+  cursor: pointer;
+  transition: background-color .3s ease;
+}
+
+.ContextMenu__item:hover {
+  background: #F3F4F6;
+}
+
+.text-red {
+  color: #FF1F57;
+}
+
+.MailItem.selected {
+  background: #F3F4F6;
+}
