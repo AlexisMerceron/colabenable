@@ -12,12 +12,11 @@ export const DradItem: FunctionComponent<DradItemProps> = ({ onResolve }) => {
 
   const onDragStartHandler = (e: DragEvent<HTMLDivElement>) => {
     isDraging.setTrue()
-    console.log(e)
     const element = e.target
   }
 
   return (
-    <div className={clsx("DradItem")} onDragStart={onDragStartHandler} draggable>
+    <div className={clsx('DradItem')} onDragStart={onDragStartHandler} draggable>
       Drag
     </div>
   )

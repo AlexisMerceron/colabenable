@@ -3,7 +3,7 @@
   height: 100%;
   background: white;
   display: grid;
-  grid-template-areas: 
+  grid-template-areas:
     "sidebar header"
     "sidebar body";
   grid-template-columns: 210px auto;
@@ -12,7 +12,7 @@
 
 .FakeMailApp__header {
   grid-area: header;
-  border-bottom: 1px solid #E2E8F1;
+  border-bottom: 1px solid #e2e8f1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -24,15 +24,15 @@
   display: flex;
   padding: 4px;
   border-radius: 50%;
-  
+
   &:hover {
-    background: #E2E8F1;
+    background: #e2e8f1;
   }
 }
 
 .FakeMailApp__sidebar {
   grid-area: sidebar;
-  border-right: 1px solid #E2E8F1;
+  border-right: 1px solid #e2e8f1;
   box-sizing: border-box;
   padding: 8px;
 }
@@ -56,8 +56,8 @@
 }
 
 .FakeMailApp__instruction--area {
-  background-color: #DBEAFE;
-  color: #2B7FFF;
+  background-color: #dbeafe;
+  color: #2b7fff;
   padding: 8px;
   border-radius: 5px;
   display: flex;

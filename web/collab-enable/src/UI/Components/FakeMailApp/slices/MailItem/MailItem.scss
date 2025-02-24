@@ -1,12 +1,12 @@
 .MailItem {
-  border-bottom: 1px solid #E2E8F1;
+  border-bottom: 1px solid #e2e8f1;
   cursor: pointer;
   user-select: none;
   position: relative;
   padding: 8px;
-  
+
   &:hover {
-    background: #F1F5F9;
+    background: #f1f5f9;
   }
 }
 
@@ -32,7 +32,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  border: 1px solid #F3F4F6;
+  border: 1px solid #f3f4f6;
 }
 
 .ContextMenu__item {
@@ -40,17 +40,17 @@
   padding: 8px;
   margin: 0;
   cursor: pointer;
-  transition: background-color .3s ease;
+  transition: background-color 0.3s ease;
 }
 
 .ContextMenu__item:hover {
-  background: #F3F4F6;
+  background: #f3f4f6;
 }
 
 .text-red {
-  color: #FF1F57;
+  color: #ff1f57;
 }
 
 .MailItem.selected {
-  background: #F3F4F6;
+  background: #f3f4f6;
 }

@@ -1,15 +1,17 @@
 export class TimeUtils {
   static formatSeconds(seconds: number): string {
-    const hours = Math.floor(seconds / 3600)
-    seconds %= 3600
+    let remainingSeconds = seconds
 
-    const minutes = Math.floor(seconds / 60)
-    seconds %= 60
+    const hours = Math.floor(remainingSeconds / 3600)
+    remainingSeconds %= 3600
+
+    const minutes = Math.floor(remainingSeconds / 60)
+    remainingSeconds %= 60
 
     const parts: string[] = []
     if (hours > 0) parts.push(`${hours}h`)
     if (minutes > 0) parts.push(`${minutes}m`)
-    if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`)
+    if (remainingSeconds > 0 || parts.length === 0) parts.push(`${remainingSeconds}s`)
 
     return parts.join('')
   }

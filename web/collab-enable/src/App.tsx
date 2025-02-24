@@ -4,7 +4,6 @@ import '@radix-ui/themes/styles.css'
 import './App.css'
 
 function App() {
-
   return (
     <Theme grayColor="slate">
       <MouseMoveRecorder />

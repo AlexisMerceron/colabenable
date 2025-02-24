@@ -1,5 +1,16 @@
 import { FunctionComponent, useCallback, useEffect, useMemo } from 'react'
-import { CursorAction, CursorTrackingArea, DoubleClickItem, GraphModal, KeyboardButton, Navbar, LeftClickItem, RightClickItem, TimerView, DradItem, FakeMailApp } from '../../Components'
+import {
+  CursorAction,
+  CursorTrackingArea,
+  DoubleClickItem,
+  GraphModal,
+  KeyboardButton,
+  Navbar,
+  LeftClickItem,
+  RightClickItem,
+  TimerView,
+  FakeMailApp,
+} from '../../Components'
 import { useBoolean, useStateful } from 'react-hanger'
 import { Case, Else, If, Switch, Then } from 'react-if'
 import { TimeUtils } from '../../../Utils'
@@ -10,8 +21,8 @@ import './MouseMoveRecorder.scss'
 const ITEM_WIDTH = 50
 const ITEM_HEIGHT = 50
 
-interface ViewMode { 
-  value: 'forms' | 'mail', 
+interface ViewMode {
+  value: 'forms' | 'mail'
   label: string
 }
 
@@ -28,18 +39,18 @@ enum InteractionType {
 }
 
 interface InteractionData {
-  x: number;
-  y: number;
-  type: InteractionType;
-  xEnd?: number;
-  yEnd?: number;
+  x: number
+  y: number
+  type: InteractionType
+  xEnd?: number
+  yEnd?: number
 }
 
 const getRandomInteractionType = (): InteractionType => {
   const values = Object.values(InteractionType)
   const randomIndex = Math.floor(Math.random() * values.length)
   return values[randomIndex]
-};
+}
 
 const getRandomPosition = (maxX: number, maxY: number) => {
   const x = Math.floor(Math.random() * (maxX - ITEM_WIDTH))
@@ -48,8 +59,12 @@ const getRandomPosition = (maxX: number, maxY: number) => {
 }
 
 export const MouseMoveRecorder: FunctionComponent = () => {
-  const currentInteraction = useStateful<InteractionData | undefined>({ x: 10, y: 300, type: InteractionType.LEFT_CLICK })
-  const cursorTrackingAreaSize = useStateful<{ w: number, h: number } | undefined>(undefined)
+  const currentInteraction = useStateful<InteractionData | undefined>({
+    x: 10,
+    y: 300,
+    type: InteractionType.LEFT_CLICK,
+  })
+  const cursorTrackingAreaSize = useStateful<{ w: number; h: number } | undefined>(undefined)
 
   const showGraphModal = useBoolean(false)
   const isSpaceButtonClick = useBoolean(false)
@@ -63,38 +78,61 @@ export const MouseMoveRecorder: FunctionComponent = () => {
   }
 
   const generateRandomInteraction = useCallback(() => {
-    const { x, y } = getRandomPosition(cursorTrackingAreaSize.value?.w ?? 0, cursorTrackingAreaSize.value?.h ?? 0)
+    const { x, y } = getRandomPosition(
+      cursorTrackingAreaSize.value?.w ?? 0,
+      cursorTrackingAreaSize.value?.h ?? 0,
+    )
     const interactionType = getRandomInteractionType()
 
     if (interactionType === InteractionType.DRAG) {
-      const { x: xEnd, y: yEnd } = getRandomPosition(cursorTrackingAreaSize.value?.w ?? 0, cursorTrackingAreaSize.value?.h ?? 0)
+      const { x: xEnd, y: yEnd } = getRandomPosition(
+        cursorTrackingAreaSize.value?.w ?? 0,
+        cursorTrackingAreaSize.value?.h ?? 0,
+      )
       currentInteraction.setValue({
         x,
         y,
         type: InteractionType.LEFT_CLICK,
         xEnd,
-        yEnd
+        yEnd,
       })
     } else {
       currentInteraction.setValue({
         x,
         y,
-        type: interactionType
+        type: interactionType,
       })
     }
-    
   }, [currentInteraction, cursorTrackingAreaSize.value])
 
   const interactionItemView = useMemo(() => {
     switch (currentInteraction.value?.type) {
       case InteractionType.LEFT_CLICK:
-        return  <LeftClickItem x={currentInteraction.value.x} y={currentInteraction.value.y} onResolve={generateRandomInteraction} />
-      
+        return (
+          <LeftClickItem
+            x={currentInteraction.value.x}
+            y={currentInteraction.value.y}
+            onResolve={generateRandomInteraction}
+          />
+        )
+
       case InteractionType.DOUBLE_CLICK:
-        return  <DoubleClickItem x={currentInteraction.value.x} y={currentInteraction.value.y} onResolve={generateRandomInteraction} />
+        return (
+          <DoubleClickItem
+            x={currentInteraction.value.x}
+            y={currentInteraction.value.y}
+            onResolve={generateRandomInteraction}
+          />
+        )
 
       case InteractionType.RIGHT_CLICK:
-        return  <RightClickItem x={currentInteraction.value.x} y={currentInteraction.value.y} onResolve={generateRandomInteraction} />
+        return (
+          <RightClickItem
+            x={currentInteraction.value.x}
+            y={currentInteraction.value.y}
+            onResolve={generateRandomInteraction}
+          />
+        )
     }
   }, [currentInteraction.value, generateRandomInteraction])
 
@@ -102,13 +140,15 @@ export const MouseMoveRecorder: FunctionComponent = () => {
 
   const onEvent = (x: number, y: number, action: CursorAction) => {
     console.log('event', `${Date.now()},${x},${y},${action}`)
-    debug.setValue( `${Date.now()},${x},${y},${action}`)
+    debug.setValue(`${Date.now()},${x},${y},${action}`)
     if (isRecording.value) {
       interactions.setValue([...interactions.value, { time: Date.now(), x, y, action }])
     }
   }
 
-  const interactions = useStateful<{ time: number, x: number, y: number, action: CursorAction }[]>([])
+  const interactions = useStateful<{ time: number; x: number; y: number; action: CursorAction }[]>(
+    [],
+  )
 
   const downloadCSV = () => {
     const headers = 'time,x,y,action\n'
@@ -134,9 +174,8 @@ export const MouseMoveRecorder: FunctionComponent = () => {
         time.setValue(time.value + 1)
       }, 1000)
       return () => clearInterval(interval)
-    } else {
-      time.setValue(0)
     }
+    time.setValue(0)
   }, [isRecording.value, time])
 
   const stopRecord = useCallback(() => {
@@ -147,20 +186,23 @@ export const MouseMoveRecorder: FunctionComponent = () => {
     }
   }, [isRecording, recordedTime, time.value, showGraphModal])
 
-  const onKeyboardPress = useCallback((e: KeyboardEvent) => {
-    if (showGraphModal.value) {
-      return
-    }
+  const onKeyboardPress = useCallback(
+    (e: KeyboardEvent) => {
+      if (showGraphModal.value) {
+        return
+      }
 
-    if (e.code === 'Space') {
-      isSpaceButtonClick.setTrue()
-      isRecording.setTrue()
-      generateRandomInteraction()
-    } else if (e.code === 'Escape' && isRecording.value) {
-      stopRecord()
-    }
-  },[isSpaceButtonClick, showGraphModal, isRecording, generateRandomInteraction, stopRecord])
-  
+      if (e.code === 'Space') {
+        isSpaceButtonClick.setTrue()
+        isRecording.setTrue()
+        generateRandomInteraction()
+      } else if (e.code === 'Escape' && isRecording.value) {
+        stopRecord()
+      }
+    },
+    [isSpaceButtonClick, showGraphModal, isRecording, generateRandomInteraction, stopRecord],
+  )
+
   useEffect(() => {
     window.addEventListener('keydown', onKeyboardPress)
     window.addEventListener('keyup', isSpaceButtonClick.setFalse)
@@ -180,11 +222,21 @@ export const MouseMoveRecorder: FunctionComponent = () => {
           <If condition={isRecording.value}>
             <Then>
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                <TimerView seconds={time.value} />&nbsp;<p className="MouseActivityTracker__instructions">Appuyez sur la touche <KeyboardButton pressed={isSpaceButtonClick.value}>Échap</KeyboardButton> de votre clavier pour areter l'enregistrement</p>
+                <TimerView seconds={time.value} />
+                &nbsp;
+                <p className="MouseActivityTracker__instructions">
+                  Appuyez sur la touche{' '}
+                  <KeyboardButton pressed={isSpaceButtonClick.value}>Échap</KeyboardButton> de votre
+                  clavier pour areter l'enregistrement
+                </p>
               </div>
             </Then>
             <Else>
-              <p className="MouseActivityTracker__instructions">Appuyez sur la touche <KeyboardButton pressed={isSpaceButtonClick.value}>Espace</KeyboardButton> de votre clavier pour lancer l'enregistrement</p>
+              <p className="MouseActivityTracker__instructions">
+                Appuyez sur la touche{' '}
+                <KeyboardButton pressed={isSpaceButtonClick.value}>Espace</KeyboardButton> de votre
+                clavier pour lancer l'enregistrement
+              </p>
             </Else>
           </If>
           <Select
@@ -195,7 +247,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
             options={options}
           />
         </Navbar>
-        <CursorTrackingArea 
+        <CursorTrackingArea
           onSizeChange={onCursorTrackingAreaSizeChange}
           onEvent={onEvent}
           recording={isRecording.value}
@@ -215,9 +267,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
             </Case>
             <Case condition={selectedOption.value?.value === 'forms'}>
               <If condition={isRecording.value}>
-                <Then>
-                  {interactionItemView}
-                </Then>
+                <Then>{interactionItemView}</Then>
                 <Else>
                   <div className="FakeAppPlaceHolder__area">
                     <IconClick className="icon" color="white" strokeWidth={1} size={150} />
@@ -228,9 +278,9 @@ export const MouseMoveRecorder: FunctionComponent = () => {
           </Switch>
         </CursorTrackingArea>
       </div>
-      <GraphModal 
+      <GraphModal
         open={showGraphModal.value}
-        onClose={() => { 
+        onClose={() => {
           showGraphModal.setFalse()
           interactions.setValue([])
         }}

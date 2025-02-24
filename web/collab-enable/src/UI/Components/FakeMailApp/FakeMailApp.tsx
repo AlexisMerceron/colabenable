@@ -10,76 +10,80 @@ interface FakeEmail {
   id: number
   fullName: string
   object: string
-  content: string,
-  reponses: { message: string, id: string }[]
+  content: string
+  reponses: { message: string; id: string }[]
 }
 
 const FAKE_MAILS: FakeEmail[] = [
   {
     id: 1,
-    fullName: "Lara Durand",
-    object: "Mise à jour du rapport mensuel",
-    content: "Bonjour, pourriez-vous vérifier le dernier rapport envoyé et me confirmer ? Merci !",
-    reponses: [{
-      id: '1',
-      message: 'Bonjour, j\'ai bien pris en compte votre demande. Je vais vérifier le rapport et vous fais un retour rapidement. Bonne journée !'
-    }]
+    fullName: 'Lara Durand',
+    object: 'Mise à jour du rapport mensuel',
+    content: 'Bonjour, pourriez-vous vérifier le dernier rapport envoyé et me confirmer ? Merci !',
+    reponses: [
+      {
+        id: '1',
+        message:
+          "Bonjour, j'ai bien pris en compte votre demande. Je vais vérifier le rapport et vous fais un retour rapidement. Bonne journée !",
+      },
+    ],
   },
   {
     id: 2,
-    fullName: "Florent Morel",
-    object: "Invitation à la réunion de projet",
-    content: "La réunion est prévue demain à 14h. Merci de confirmer votre disponibilité.",
-    reponses: []
+    fullName: 'Florent Morel',
+    object: 'Invitation à la réunion de projet',
+    content: 'La réunion est prévue demain à 14h. Merci de confirmer votre disponibilité.',
+    reponses: [],
   },
   {
     id: 3,
-    fullName: "Sophie Lemoine",
+    fullName: 'Sophie Lemoine',
     object: "Problème d'accès au portail",
-    content: "Bonjour, je rencontre des problèmes pour accéder au portail client. Pouvez-vous m’aider ?",
-    reponses: []
+    content:
+      'Bonjour, je rencontre des problèmes pour accéder au portail client. Pouvez-vous m’aider ?',
+    reponses: [],
   },
   {
     id: 4,
-    fullName: "Jean Dupuis",
-    object: "Proposition commerciale",
-    content: "Bonjour, voici notre proposition pour la collaboration. Qu’en pensez-vous ?",
-    reponses: []
+    fullName: 'Jean Dupuis',
+    object: 'Proposition commerciale',
+    content: 'Bonjour, voici notre proposition pour la collaboration. Qu’en pensez-vous ?',
+    reponses: [],
   },
 ]
 
 const recipientNames = [
-  "Alice",
-  "Benjamin",
-  "Chloé",
-  "David",
-  "Émilie",
-  "Florian",
-  "Gabriel",
-  "Hélène",
-  "Isabelle",
-  "Julien",
-  "Paul",
-  "Léa",
-  "Mathis",
-  "Noémie",
-  "Olivier",
-  "Pauline",
-  "Quentin",
-  "Raphaël",
-  "Sophie",
-  "Thomas"
+  'Alice',
+  'Benjamin',
+  'Chloé',
+  'David',
+  'Émilie',
+  'Florian',
+  'Gabriel',
+  'Hélène',
+  'Isabelle',
+  'Julien',
+  'Paul',
+  'Léa',
+  'Mathis',
+  'Noémie',
+  'Olivier',
+  'Pauline',
+  'Quentin',
+  'Raphaël',
+  'Sophie',
+  'Thomas',
 ]
 
 type Task = 'email_send' | 'email_delete' | 'email_open' | 'help_click' | 'email_reply'
 
-const tasks: Task[]  = ['email_send', 'email_delete', 'email_open', 'help_click', 'email_reply']
+const tasks: Task[] = ['email_send', 'email_delete', 'email_open', 'help_click', 'email_reply']
 
 const actionLabels: Record<string, string> = {
-  email_delete: "Supprimez le mail de ",
-  email_send: "Envoyez un mail à ",
-  email_open: "Ouvrez le mail de ",
-  email_reply: "Répondez au mail de ",
+  email_delete: 'Supprimez le mail de ',
+  email_send: 'Envoyez un mail à ',
+  email_open: 'Ouvrez le mail de ',
+  email_reply: 'Répondez au mail de ',
 }
 
 const computeTaskScore = (task: Task) => {
@@ -93,7 +97,7 @@ interface MissionData {
 }
 
 export const FakeMailApp: FunctionComponent = () => {
-  const selectedMail = useStateful<typeof FAKE_MAILS[0] | null>(null)
+  const selectedMail = useStateful<(typeof FAKE_MAILS)[0] | null>(null)
   const fakeMails = useArray(FAKE_MAILS)
 
   const isEditMode = useBoolean(false)
@@ -115,8 +119,9 @@ export const FakeMailApp: FunctionComponent = () => {
     }
 
     if (['email_delete', 'email_send', 'email_open', 'email_reply'].includes(task)) {
-      let randomFullname = fakeMails.value[Math.floor(Math.random() * fakeMails.value.length)]?.fullName ?? ''
-      
+      let randomFullname =
+        fakeMails.value[Math.floor(Math.random() * fakeMails.value.length)]?.fullName ?? ''
+
       if (task === 'email_send') {
         randomFullname = recipientNames[Math.floor(Math.random() * recipientNames.length)]
       }
@@ -133,7 +138,7 @@ export const FakeMailApp: FunctionComponent = () => {
       label: "Cliquez sur l'aide",
     }
   }, [fakeMails.value])
-  
+
   const missionData = useStateful<MissionData>(generateRandomMission())
 
   const onSendClick = (mail: Mail) => {
@@ -142,7 +147,7 @@ export const FakeMailApp: FunctionComponent = () => {
       fullName: mail.to,
       object: mail.objet,
       content: mail.message,
-      reponses: []
+      reponses: [],
     })
     isEditMode.setFalse()
     onTask('email_send', {
@@ -150,7 +155,7 @@ export const FakeMailApp: FunctionComponent = () => {
       fullName: mail.to,
       object: mail.objet,
       content: mail.message,
-      reponses: []
+      reponses: [],
     })
   }
 
@@ -160,27 +165,21 @@ export const FakeMailApp: FunctionComponent = () => {
         missionData.setValue(generateRandomMission())
         computeTaskScore(task)
       }
-    }
-
-    else if (missionData.value.type === task && task === 'email_reply') {
+    } else if (missionData.value.type === task && task === 'email_reply') {
       if (payload?.fullName === missionData.value.payload) {
         missionData.setValue(generateRandomMission())
       }
-    }
-
-    else if (missionData.value.type === task && task === 'email_send') {
-      if (payload?.fullName?.toLocaleLowerCase() === missionData.value.payload?.toLocaleLowerCase()) {
+    } else if (missionData.value.type === task && task === 'email_send') {
+      if (
+        payload?.fullName?.toLocaleLowerCase() === missionData.value.payload?.toLocaleLowerCase()
+      ) {
         missionData.setValue(generateRandomMission())
       }
-    }
-
-    else if (missionData.value.type === task && task === 'email_open') {
+    } else if (missionData.value.type === task && task === 'email_open') {
       if (payload?.fullName === missionData.value.payload) {
         missionData.setValue(generateRandomMission())
       }
-    }
-
-    else if (missionData.value.type === task && task === 'help_click') {
+    } else if (missionData.value.type === task && task === 'help_click') {
       missionData.setValue(generateRandomMission())
     }
   }
@@ -189,20 +188,23 @@ export const FakeMailApp: FunctionComponent = () => {
 
   const onSendReplyClick = () => {
     if (!selectedMail.value || !replyMessage.value.trim()) return
-  
+
     const updatedMails = fakeMails.value.map((mail) =>
       mail.id === selectedMail.value?.id
-        ? { ...mail, reponses: [...mail.reponses, { message: replyMessage.value, id: String(Date.now()) }] }
-        : mail
-    );
-  
+        ? {
+            ...mail,
+            reponses: [...mail.reponses, { message: replyMessage.value, id: String(Date.now()) }],
+          }
+        : mail,
+    )
+
     fakeMails.setValue(updatedMails)
-  
-    const newSelectedMessage = updatedMails.find(mail => mail.id === selectedMail.value?.id);
+
+    const newSelectedMessage = updatedMails.find((mail) => mail.id === selectedMail.value?.id)
     if (newSelectedMessage) {
       selectedMail.setValue(newSelectedMessage)
     }
-  
+
     replyMessage.setValue('')
     isReplyMode.setFalse()
     onTask('email_reply', selectedMail.value)
@@ -215,15 +217,22 @@ export const FakeMailApp: FunctionComponent = () => {
           <IconClipboardList size={16} />
           {missionData.value.label}
         </Badge>
-        <div onClick={() => {
-            alert("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.")
+        <div
+          onClick={() => {
+            alert(
+              "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
+            )
             onTask('help_click')
-          }} className="FakeMailApp__header__help--icon">
+          }}
+          className="FakeMailApp__header__help--icon"
+        >
           <IconHelp />
         </div>
       </div>
       <div className="FakeMailApp__sidebar">
-        <Button color="yellow" style={{ width: '100%' }} onClick={isEditMode.setTrue}>Nouveau mail</Button>
+        <Button color="yellow" style={{ width: '100%' }} onClick={isEditMode.setTrue}>
+          Nouveau mail
+        </Button>
         {fakeMails.value.map((fakeMail) => (
           <MailItem
             key={fakeMail.id}
@@ -249,45 +258,47 @@ export const FakeMailApp: FunctionComponent = () => {
             <NewMail onSendClick={onSendClick} />
           </Then>
           <Else>
-          <If condition={!!selectedMail.value}>
-            <Then>
-              <Flex direction="column" gap="3">
-                <Flex justify="between" align="center">
-                  <Heading>{selectedMail.value?.object}</Heading>
+            <If condition={!!selectedMail.value}>
+              <Then>
+                <Flex direction="column" gap="3">
+                  <Flex justify="between" align="center">
+                    <Heading>{selectedMail.value?.object}</Heading>
+                    <If condition={isReplyMode.value}>
+                      <Then>
+                        <Button onClick={onSendReplyClick} color="yellow">
+                          Envoyer la reponse
+                        </Button>
+                      </Then>
+                      <Else>
+                        <Button onClick={isReplyMode.setTrue} color="yellow" variant="outline">
+                          <IconShare3 size={16} />
+                          Repondre
+                        </Button>
+                      </Else>
+                    </If>
+                  </Flex>
                   <If condition={isReplyMode.value}>
                     <Then>
-                      <Button onClick={onSendReplyClick} color="yellow">Envoyer la reponse</Button>
+                      <TextArea defaultValue="" onChange={replyMessage.onChange} />
                     </Then>
-                    <Else>
-                      <Button onClick={isReplyMode.setTrue} color="yellow" variant="outline">
-                        <IconShare3 size={16} />
-                        Repondre
-                      </Button>
-                    </Else>
                   </If>
+                  <Text size="2">{selectedMail.value?.content}</Text>
+                  <Text size="2">De : {selectedMail.value?.fullName}</Text>
+                  {selectedMail.value?.reponses.map((response) => (
+                    <Box key={response.id}>
+                      <hr />
+                      <Text>{response.message}</Text>
+                    </Box>
+                  ))}
                 </Flex>
-                <If condition={isReplyMode.value}>
-                  <Then>
-                    <TextArea defaultValue="" onChange={replyMessage.onChange} />
-                  </Then>
-                </If>
-                <Text size="2">{selectedMail.value?.content}</Text>
-                <Text size="2">De : {selectedMail.value?.fullName}</Text>
-                {selectedMail.value?.reponses.map(response => (
-                  <Box key={response.id}>
-                    <hr />
-                    <Text>{response.message}</Text>
-                  </Box>
-                ))}
-              </Flex>
-            </Then>
-            <Else>
-              <div className="FakeMailApp__empty-state">
-                <IconForbid2 size={180} strokeWidth={0.4} />
-                <Text>Aucun mail sélectionné</Text>
-              </div>
-            </Else>
-          </If>
+              </Then>
+              <Else>
+                <div className="FakeMailApp__empty-state">
+                  <IconForbid2 size={180} strokeWidth={0.4} />
+                  <Text>Aucun mail sélectionné</Text>
+                </div>
+              </Else>
+            </If>
           </Else>
         </If>
       </div>

@@ -6,15 +6,20 @@ import './CursorTrackingArea.scss'
 export type CursorAction = 'left_click' | 'double_click' | 'right_click' | 'drag' | 'move'
 
 interface CursorTrackingAreaProps extends PropsWithChildren {
-  onSizeChange: (w: number, h: number) => void,
+  onSizeChange: (w: number, h: number) => void
   onEvent?: (x: number, y: number, action: CursorAction) => void
   recording?: boolean
 }
 
-export const CursorTrackingArea: FunctionComponent<CursorTrackingAreaProps> = ({ onSizeChange, children, onEvent, recording }) => {
+export const CursorTrackingArea: FunctionComponent<CursorTrackingAreaProps> = ({
+  onSizeChange,
+  children,
+  onEvent,
+  recording,
+}) => {
   const divRef = useRef<HTMLDivElement>(null)
   const isClicked = useBoolean(false)
-  
+
   useEffect(() => {
     if (divRef.current) {
       const observer = new ResizeObserver((entries) => {
@@ -25,12 +30,12 @@ export const CursorTrackingArea: FunctionComponent<CursorTrackingAreaProps> = ({
       })
 
       observer.observe(divRef.current)
-      
+
       return () => {
         observer.disconnect()
       }
     }
-  }, [onSizeChange]);
+  }, [onSizeChange])
 
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect()
@@ -67,11 +72,11 @@ export const CursorTrackingArea: FunctionComponent<CursorTrackingAreaProps> = ({
   }
 
   return (
-    <div 
-      ref={divRef} 
+    <div
+      ref={divRef}
       className={clsx('CursorTrackingArea', { recording })}
-      onMouseDown={isClicked.setTrue} 
-      onMouseUp={isClicked.setFalse} 
+      onMouseDown={isClicked.setTrue}
+      onMouseUp={isClicked.setFalse}
       onClick={handleClick}
       onMouseMove={handleMouseMove}
       onContextMenu={onContextMenu}

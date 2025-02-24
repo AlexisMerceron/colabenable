@@ -7,9 +7,5 @@ interface KeyboardButtonProps extends PropsWithChildren {
 }
 
 export const KeyboardButton: FunctionComponent<KeyboardButtonProps> = ({ pressed, children }) => {
-  return (
-    <div className={clsx('KeyboardButton', { pressed })}>
-      {children}
-    </div>
-  )
+  return <div className={clsx('KeyboardButton', { pressed })}>{children}</div>
 }

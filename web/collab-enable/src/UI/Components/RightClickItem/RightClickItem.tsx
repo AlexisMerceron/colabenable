@@ -2,8 +2,8 @@ import { FunctionComponent, MouseEvent } from 'react'
 import './RightClickItem.scss'
 
 interface RightClickItemProps {
-  x: number,
-  y: number,
+  x: number
+  y: number
   onResolve?: () => void
 }
 
@@ -14,6 +14,8 @@ export const RightClickItem: FunctionComponent<RightClickItemProps> = ({ x, y, o
   }
 
   return (
-    <div className="RightClickItem" onContextMenu={onContextMenu} style={{ top: y, left: x }}>Droit</div>
+    <div className="RightClickItem" onContextMenu={onContextMenu} style={{ top: y, left: x }}>
+      Droit
+    </div>
   )
 }
