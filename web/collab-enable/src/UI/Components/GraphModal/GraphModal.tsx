@@ -19,7 +19,7 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
   data,
   onDonwloadButtonClick,
 }) => {
-  const { moveEvents, dragEvents, clickEvents, doubleClickEvents, rightClickEvents, allEvents } =
+  const { dragEvents, clickEvents, doubleClickEvents, rightClickEvents, allEvents } =
     useMemo(() => {
       const localAllEvents = []
       const localMoveEvents = []
