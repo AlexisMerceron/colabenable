@@ -1,4 +1,4 @@
-import { FunctionComponent, useCallback } from 'react'
+import { FunctionComponent, useCallback, useMemo } from 'react'
 import { Mail, MailItem, NewMail } from './slices'
 import { If, Then, Else } from 'react-if'
 import { useStateful, useArray, useBoolean, useInput } from 'react-hanger'
@@ -86,8 +86,11 @@ const actionLabels: Record<string, string> = {
   email_reply: 'Répondez au mail de ',
 }
 
-const computeTaskScore = (task: Task) => {
-  //
+interface ResolutionStack {
+  label: string
+  startTime: number
+  endTime: number
+  type: Task
 }
 
 interface MissionData {
@@ -99,6 +102,7 @@ interface MissionData {
 export const FakeMailApp: FunctionComponent = () => {
   const selectedMail = useStateful<(typeof FAKE_MAILS)[0] | null>(null)
   const fakeMails = useArray(FAKE_MAILS)
+  const resolutionsStack = useArray<ResolutionStack>([])
 
   const isEditMode = useBoolean(false)
   const isReplyMode = useBoolean(false)
@@ -141,6 +145,17 @@ export const FakeMailApp: FunctionComponent = () => {
 
   const missionData = useStateful<MissionData>(generateRandomMission())
 
+  const missionStartTime = useMemo(() => Date.now(), [missionData])
+
+  const computeTaskScore = () => {
+    resolutionsStack.push({
+      startTime: missionStartTime,
+      endTime: Date.now(),
+      label: missionData.value.label,
+      type: missionData.value.type,
+    })
+  }
+
   const onSendClick = (mail: Mail) => {
     fakeMails.unshift({
       id: Math.max(0, ...fakeMails.value.map((m) => m.id)) + 1,
@@ -163,24 +178,28 @@ export const FakeMailApp: FunctionComponent = () => {
     if (missionData.value.type === task && task === 'email_delete') {
       if (payload?.fullName === missionData.value.payload) {
         missionData.setValue(generateRandomMission())
-        computeTaskScore(task)
+        computeTaskScore()
       }
     } else if (missionData.value.type === task && task === 'email_reply') {
       if (payload?.fullName === missionData.value.payload) {
         missionData.setValue(generateRandomMission())
+        computeTaskScore()
       }
     } else if (missionData.value.type === task && task === 'email_send') {
       if (
         payload?.fullName?.toLocaleLowerCase() === missionData.value.payload?.toLocaleLowerCase()
       ) {
         missionData.setValue(generateRandomMission())
+        computeTaskScore()
       }
     } else if (missionData.value.type === task && task === 'email_open') {
       if (payload?.fullName === missionData.value.payload) {
         missionData.setValue(generateRandomMission())
+        computeTaskScore()
       }
     } else if (missionData.value.type === task && task === 'help_click') {
       missionData.setValue(generateRandomMission())
+      computeTaskScore()
     }
   }
 
@@ -210,13 +229,75 @@ export const FakeMailApp: FunctionComponent = () => {
     onTask('email_reply', selectedMail.value)
   }
 
+  const score = useMemo(() => {
+    if (resolutionsStack.value.length === 0) return 0
+
+    let rawScore = 0
+    const totalTasks = resolutionsStack.value.length
+    const maxTheoreticalScore = totalTasks // Score maximal si toutes les tâches sont optimales
+
+    // Utiliser for...of pour parcourir resolutionsStack.value
+    for (const resolution of resolutionsStack.value) {
+      // Calculer la durée en secondes
+      const durationInSeconds = (resolution.endTime - resolution.startTime) / 1000
+
+      // Attribuer un score basé sur le type et la durée
+      let taskScore = 1 // Score de base (optimal)
+
+      switch (resolution.type) {
+        case 'email_send':
+          if (durationInSeconds > 20) {
+            const excess = durationInSeconds - 20
+            taskScore = Math.max(0, 1 - excess * 0.05) // Réduction de 0.05 par seconde d’écart
+          }
+          break
+        case 'email_delete':
+          if (durationInSeconds > 10) {
+            const excess = durationInSeconds - 10
+            taskScore = Math.max(0, 1 - excess * 0.2) // Réduction de 0.2 par seconde d’écart
+          }
+          break
+        case 'email_open':
+          if (durationInSeconds > 5) {
+            const excess = durationInSeconds - 5
+            taskScore = Math.max(0, 1 - excess * 0.2) // Réduction de 0.2 par seconde d’écart
+          }
+          break
+        case 'help_click':
+          if (durationInSeconds > 5) {
+            const excess = durationInSeconds - 5
+            taskScore = Math.max(0, 1 - excess * 0.25) // Réduction de 0.25 par seconde d’écart
+          }
+          break
+        case 'email_reply':
+          if (durationInSeconds > 15) {
+            const excess = durationInSeconds - 15
+            taskScore = Math.max(0, 1 - excess * 0.067) // Réduction de 0.067 par seconde d’écart
+          }
+          break
+      }
+
+      rawScore += taskScore
+    }
+
+    // Normaliser le score sur 20
+    const normalizedScore = (rawScore / maxTheoreticalScore) * 20
+
+    // Limiter le score entre 0 et 20
+    return Math.round(Math.min(Math.max(normalizedScore, 0), 20))
+  }, [resolutionsStack.value])
+
   return (
     <div className="FakeMailApp">
       <div className="FakeMailApp__header">
-        <Badge size="2" radius="full">
-          <IconClipboardList size={16} />
-          {missionData.value.label}
-        </Badge>
+        <Flex align="center" gap="3">
+          <Badge size="2" radius="full">
+            <IconClipboardList size={16} />
+            {missionData.value.label}
+          </Badge>
+          <Badge color="gray">{score}/20</Badge>
+        </Flex>
+
         <div
           onClick={() => {
             alert(
