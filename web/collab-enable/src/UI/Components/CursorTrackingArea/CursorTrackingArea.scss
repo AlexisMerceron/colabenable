@@ -1,0 +1,12 @@
+.CursorTrackingArea {
+  position: relative;
+  grid-area: cursor_tracking_area;
+  background-color: #111113;
+  margin: 8px;
+  border: 1px solid #3e3f44;
+  box-sizing: border-box;
+}
+
+.CursorTrackingArea.recording {
+  border: 1px solid #ef4444;
+}
