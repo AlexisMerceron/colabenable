@@ -1,0 +1,46 @@
+{
+  "editor.formatOnSave": true,
+
+  "editor.defaultFormatter": "biomejs.biome",
+
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "[php]": {
+    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
+  },
+
+  "editor.codeActionsOnSave": {
+    "quickfix.biome": "explicit"
+  },
+
+  "autoSnippet.snippets": [
+    {
+      "pattern": "**/**.tsx",
+      "snippet": "create-component"
+    },
+    {
+      "pattern": "**/**.scss",
+      "snippet": "create-style"
+    }
+  ],
+
+  "makefile.configureOnOpen": false
+}
