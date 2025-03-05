@@ -2,24 +2,37 @@ import express from 'express'
 import nodemailer from 'nodemailer'
 
 const transporter = nodemailer.createTransport({
-  host: "0.0.0.0",
-  port: 1025,
-  ignoreTLS: true,
+  host: "smtp.mailersend.net",
+  port: 587,
+  auth: {
+    user: 'MS_M6lMTb@trial-pr9084z0n38lw63d.mlsender.net',
+    pass: 'mssp.PhWti8z.0r83ql3jy1vgzw1j.1QYCcCi'
+  }
 })
 
 const app = express()
 const port = 3000
 
 app.get('/', async (req, res) => {
-  const info = await transporter.sendMail({
-    from: '"Maddison Foo Koch 👻" <maddison53@ethereal.email>',
+  const data = ['x,y,action', '2,4,move', '3,5,move', '1,5,move', '2,4,click']
+  const csvContent = data.join('\n')
+
+  await transporter.sendMail({
+    from: '"Collabenable" <data@trial-pr9084z0n38lw63d.mlsender.net>',
     to: "alphanor14200@gmail.com",
-    subject: "Hello ✔",
-    text: "Hello world?",
-    html: "<b>Hello world?</b>",
+    subject: "📊 Nouvelle données 🎉",
+    text: "De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV.",
+    html: "<b style='font-family: Arial, sans-serif;'>De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV 🤩.</b>",
+    attachments: [
+      {
+          filename: 'data.csv',
+          content: csvContent,
+          contentType: 'text/csv'
+      }
+    ]
   })
 
-  res.send('Hello World! email')
+  res.send('Hello World! mailersend')
 })
 
 app.listen(port, () => {
