@@ -1,12 +1,15 @@
 import express from 'express'
 import nodemailer from 'nodemailer'
 
+const MAIL = 'MS_M6lMTb@trial-pr9084z0n38lw63d.mlsender.net'
+const PASSWORD = 'mssp.PhWti8z.0r83ql3jy1vgzw1j.1QYCcCi'
+
 const transporter = nodemailer.createTransport({
   host: "smtp.mailersend.net",
   port: 587,
   auth: {
-    user: 'MS_M6lMTb@trial-pr9084z0n38lw63d.mlsender.net',
-    pass: 'mssp.PhWti8z.0r83ql3jy1vgzw1j.1QYCcCi'
+    user: MAIL,
+    pass: PASSWORD
   }
 })
 
@@ -18,7 +21,7 @@ app.get('/', async (req, res) => {
   const csvContent = data.join('\n')
 
   await transporter.sendMail({
-    from: '"Collabenable" <data@trial-pr9084z0n38lw63d.mlsender.net>',
+    from: `"Collabenable" <${MAIL}>`,
     to: "alphanor14200@gmail.com",
     subject: "📊 Nouvelle données 🎉",
     text: "De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV.",
