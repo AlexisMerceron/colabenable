@@ -19,7 +19,7 @@ app.get('/', async (req, res) => {
     html: "<b>Hello world?</b>",
   })
 
-  res.send('Hello World!')
+  res.send('Hello World! email')
 })
 
 app.listen(port, () => {
