@@ -16,14 +16,14 @@ const transporter = nodemailer.createTransport({
 const app = express()
 const port = 3000
 
-app.get('/', async (req, res) => {
+app.post('/send-data', async (req, res) => {
   const data = ['x,y,action', '2,4,move', '3,5,move', '1,5,move', '2,4,click']
   const csvContent = data.join('\n')
 
   await transporter.sendMail({
     from: `"Collabenable" <${MAIL}>`,
     to: "alphanor14200@gmail.com",
-    subject: "📊 Nouvelle données 🎉",
+    subject: "📊 Nouvelle données [2min34] 🎉",
     text: "De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV.",
     html: "<b style='font-family: Arial, sans-serif;'>De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV 🤩.</b>",
     attachments: [
