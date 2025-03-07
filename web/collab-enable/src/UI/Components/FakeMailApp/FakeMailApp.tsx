@@ -234,45 +234,42 @@ export const FakeMailApp: FunctionComponent = () => {
 
     let rawScore = 0
     const totalTasks = resolutionsStack.value.length
-    const maxTheoreticalScore = totalTasks // Score maximal si toutes les tâches sont optimales
+    const maxTheoreticalScore = totalTasks
 
-    // Utiliser for...of pour parcourir resolutionsStack.value
     for (const resolution of resolutionsStack.value) {
-      // Calculer la durée en secondes
       const durationInSeconds = (resolution.endTime - resolution.startTime) / 1000
 
-      // Attribuer un score basé sur le type et la durée
-      let taskScore = 1 // Score de base (optimal)
+      let taskScore = 1
 
       switch (resolution.type) {
         case 'email_send':
           if (durationInSeconds > 20) {
             const excess = durationInSeconds - 20
-            taskScore = Math.max(0, 1 - excess * 0.05) // Réduction de 0.05 par seconde d’écart
+            taskScore = Math.max(0, 1 - excess * 0.05)
           }
           break
         case 'email_delete':
           if (durationInSeconds > 10) {
             const excess = durationInSeconds - 10
-            taskScore = Math.max(0, 1 - excess * 0.2) // Réduction de 0.2 par seconde d’écart
+            taskScore = Math.max(0, 1 - excess * 0.2)
           }
           break
         case 'email_open':
           if (durationInSeconds > 5) {
             const excess = durationInSeconds - 5
-            taskScore = Math.max(0, 1 - excess * 0.2) // Réduction de 0.2 par seconde d’écart
+            taskScore = Math.max(0, 1 - excess * 0.2)
           }
           break
         case 'help_click':
           if (durationInSeconds > 5) {
             const excess = durationInSeconds - 5
-            taskScore = Math.max(0, 1 - excess * 0.25) // Réduction de 0.25 par seconde d’écart
+            taskScore = Math.max(0, 1 - excess * 0.25)
           }
           break
         case 'email_reply':
           if (durationInSeconds > 15) {
             const excess = durationInSeconds - 15
-            taskScore = Math.max(0, 1 - excess * 0.067) // Réduction de 0.067 par seconde d’écart
+            taskScore = Math.max(0, 1 - excess * 0.067)
           }
           break
       }
@@ -280,10 +277,8 @@ export const FakeMailApp: FunctionComponent = () => {
       rawScore += taskScore
     }
 
-    // Normaliser le score sur 20
     const normalizedScore = (rawScore / maxTheoreticalScore) * 20
 
-    // Limiter le score entre 0 et 20
     return Math.round(Math.min(Math.max(normalizedScore, 0), 20))
   }, [resolutionsStack.value])
 

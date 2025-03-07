@@ -2,15 +2,17 @@ import { FunctionComponent, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import ReactECharts from 'echarts-for-react'
 import { CursorAction } from '../CursorTrackingArea/CursorTrackingArea'
-import { IconX } from '@tabler/icons-react'
-import './GraphModal.scss'
+import { IconDownload, IconSend, IconX } from '@tabler/icons-react'
 import { Button, Theme } from '@radix-ui/themes'
+import './GraphModal.scss'
 
 interface GraphModalProps {
   open?: boolean
   onClose?: () => void
-  data?: { x: number; y: number; action: CursorAction }[]
+  data?: { time: number; x: number; y: number; action: CursorAction }[]
   onDonwloadButtonClick?: () => void
+  onSendByEmailButtonClick?: (data: string[]) => void
+  loading?: boolean
 }
 
 export const GraphModal: FunctionComponent<GraphModalProps> = ({
@@ -18,6 +20,8 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
   onClose,
   data,
   onDonwloadButtonClick,
+  onSendByEmailButtonClick,
+  loading,
 }) => {
   const { dragEvents, clickEvents, doubleClickEvents, rightClickEvents, allEvents } =
     useMemo(() => {
@@ -65,11 +69,23 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
         <div className="GraphModal">
           <div className="GraphModal__header">
             <div className="GraphModal__header__left--area">
-              <Button color="yellow" onClick={onDonwloadButtonClick}>
-                Télécharger le CSV en local
+              <Button
+                onClick={() =>
+                  data &&
+                  onSendByEmailButtonClick?.([
+                    'time,x,y,action',
+                    ...(data?.map((item) => `${item.time},${item.x},${item.y},${item.action}`) ??
+                      []),
+                  ])
+                }
+                color="yellow"
+                loading={loading}
+              >
+                <IconSend size={18} />
+                Envoyer le CSV par email
               </Button>
-              <Button color="gray" variant="solid" highContrast>
-                Envoyer le CSV sur le cloud Google
+              <Button color="gray" onClick={onDonwloadButtonClick} variant="solid" highContrast>
+                <IconDownload size={18} /> Télécharger le CSV en local
               </Button>
             </div>
             <button type="button" className="GraphModal__close--button" onClick={onClose}>
