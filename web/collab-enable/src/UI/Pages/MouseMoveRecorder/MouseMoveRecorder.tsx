@@ -18,6 +18,9 @@ import Select from 'react-select'
 import { IconClick, IconMail } from '@tabler/icons-react'
 import './MouseMoveRecorder.scss'
 
+// const API_URL = 'http://localhost:3000'
+const API_URL = 'https://datacollect-express.vercel.app'
+
 const ITEM_WIDTH = 50
 const ITEM_HEIGHT = 50
 
@@ -57,6 +60,9 @@ const getRandomPosition = (maxX: number, maxY: number) => {
   const y = Math.floor(Math.random() * (maxY - ITEM_HEIGHT))
   return { x, y }
 }
+
+const composeName = (seconds: number, appMode: string) =>
+  `${Date.now()}_${TimeUtils.formatSeconds(seconds)}_${appMode}_interactions.csv`
 
 export const MouseMoveRecorder: FunctionComponent = () => {
   const currentInteraction = useStateful<InteractionData | undefined>({
@@ -139,7 +145,6 @@ export const MouseMoveRecorder: FunctionComponent = () => {
   const debug = useStateful('')
 
   const onEvent = (x: number, y: number, action: CursorAction) => {
-    console.log('event', `${Date.now()},${x},${y},${action}`)
     debug.setValue(`${Date.now()},${x},${y},${action}`)
     if (isRecording.value) {
       interactions.setValue([...interactions.value, { time: Date.now(), x, y, action }])
@@ -162,7 +167,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
 
     const a = document.createElement('a')
     a.href = url
-    a.download = `${Date.now()}_${TimeUtils.formatSeconds(recordedTime.value)}_${selectedOption.value?.value}_interactions.csv`
+    a.download = composeName(recordedTime.value, selectedOption.value?.value ?? '')
     a.click()
 
     URL.revokeObjectURL(url)
@@ -214,6 +219,23 @@ export const MouseMoveRecorder: FunctionComponent = () => {
   }, [isSpaceButtonClick.setFalse, onKeyboardPress])
 
   const selectedOption = useStateful<ViewMode | null>(options[1])
+
+  const isSendEmailLoading = useBoolean(false)
+
+  const sendDataByMail = async (data: string[]) => {
+    isSendEmailLoading.setTrue()
+    await fetch(`${API_URL}/send-data`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data,
+        fileName: composeName(recordedTime.value, selectedOption.value?.value ?? ''),
+      }),
+    })
+    isSendEmailLoading.setFalse()
+  }
 
   return (
     <>
@@ -286,6 +308,8 @@ export const MouseMoveRecorder: FunctionComponent = () => {
         }}
         data={interactions.value}
         onDonwloadButtonClick={downloadCSV}
+        onSendByEmailButtonClick={sendDataByMail}
+        loading={isSendEmailLoading.value}
       />
     </>
   )
