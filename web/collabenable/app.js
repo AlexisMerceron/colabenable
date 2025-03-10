@@ -60,6 +60,6 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
 
-app.post('/version', async (req, res) => {
+app.get('/version', async (req, res) => {
   res.send('2.1.1')
 })
