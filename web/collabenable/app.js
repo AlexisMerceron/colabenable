@@ -61,5 +61,5 @@ app.listen(port, () => {
 })
 
 app.post('/version', async (req, res) => {
-  res.send('2.1.0')
+  res.send('2.1.1')
 })
