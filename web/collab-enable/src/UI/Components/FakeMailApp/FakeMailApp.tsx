@@ -1,12 +1,13 @@
+import { FunctionComponent, useCallback, useMemo } from 'react'
+import { Mail, MailItem, NewMail } from './slices'
+import { If, Then, Else } from 'react-if'
+import { useStateful, useArray, useBoolean, useInput } from 'react-hanger'
+import { IconClipboardList, IconForbid2, IconHelp, IconShare3 } from '@tabler/icons-react'
+import { Badge, Box, Button, Flex, Heading, Text, TextArea } from '@radix-ui/themes'
+import { RandomUtils } from '../../../Utils'
 import './FakeMailApp.scss'
 
-import { Badge, Box, Button, Flex, Heading, Text, TextArea } from '@radix-ui/themes'
-import { IconClipboardList, IconForbid2, IconHelp, IconShare3 } from '@tabler/icons-react'
-import { FunctionComponent, useCallback, useMemo } from 'react'
-import { useArray, useBoolean, useInput,useStateful } from 'react-hanger'
-import { Else,If, Then } from 'react-if'
-
-import { Mail, MailItem, NewMail } from './slices'
+const random = RandomUtils.seededRandom(9000)
 
 interface FakeEmail {
   id: number
@@ -118,7 +119,7 @@ export const FakeMailApp: FunctionComponent = () => {
   }
 
   const generateRandomMission = useCallback(() => {
-    const randomTaskIndex = Math.floor(Math.random() * tasks.length)
+    const randomTaskIndex = Math.floor(random() * tasks.length)
     let task: Task = 'email_send'
     if (fakeMails.value.length > 0) {
       task = tasks[randomTaskIndex]
@@ -126,10 +127,10 @@ export const FakeMailApp: FunctionComponent = () => {
 
     if (['email_delete', 'email_send', 'email_open', 'email_reply'].includes(task)) {
       let randomFullname =
-        fakeMails.value[Math.floor(Math.random() * fakeMails.value.length)]?.fullName ?? ''
+        fakeMails.value[Math.floor(random() * fakeMails.value.length)]?.fullName ?? ''
 
       if (task === 'email_send') {
-        randomFullname = recipientNames[Math.floor(Math.random() * recipientNames.length)]
+        randomFullname = recipientNames[Math.floor(random() * recipientNames.length)]
       }
 
       return {
