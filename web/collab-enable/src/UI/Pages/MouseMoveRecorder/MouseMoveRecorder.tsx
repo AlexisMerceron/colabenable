@@ -18,8 +18,7 @@ import Select from 'react-select'
 import { IconClick, IconMail } from '@tabler/icons-react'
 import './MouseMoveRecorder.scss'
 
-// const API_URL = 'http://localhost:3000'
-const API_URL = 'https://datacollect-express.vercel.app'
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ITEM_WIDTH = 50
 const ITEM_HEIGHT = 50
@@ -249,7 +248,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
                 <p className="MouseActivityTracker__instructions">
                   Appuyez sur la touche{' '}
                   <KeyboardButton pressed={isSpaceButtonClick.value}>Échap</KeyboardButton> de votre
-                  clavier pour areter l'enregistrement
+                  clavier pour arreter l'enregistrement
                 </p>
               </div>
             </Then>

@@ -4,25 +4,27 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 dotenv.config();
+let transporter;
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.mailersend.net",
-  port: 587,
-  auth: {
-    user: process.env.MAIL_FROM,
-    pass: process.env.PASSWORD,
-  },
-});
-
-//  const transporter = nodemailer.createTransport({
-//    host: "0.0.0.0",
-//    port: 1025,
-//  })
-
+if (process.env.NODE_ENV === "dev") {
+  transporter = nodemailer.createTransport({
+    host: "http://localhost",
+    port: 1025,
+  });
+} else {
+  transporter = nodemailer.createTransport({
+    host: "smtp.mailersend.net",
+    port: 587,
+    auth: {
+      user: process.env.MAIL_FROM,
+      pass: process.env.PASSWORD,
+    },
+  });
+}
 const app = express();
 app.use(express.json({ limit: "10mb" }));
 
-if(process.env.NODE_ENV === "dev") {
+if (process.env.NODE_ENV === "dev") {
   app.use(cors());
 } else {
   app.use(
