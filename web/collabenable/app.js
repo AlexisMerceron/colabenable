@@ -4,13 +4,19 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 dotenv.config();
+
 let transporter;
+const app = express();
+app.use(express.json({ limit: "10mb" }));
 
 if (process.env.NODE_ENV === "dev") {
   transporter = nodemailer.createTransport({
-    host: "http://localhost",
+    host: "0.0.0.0",
     port: 1025,
+    direct: true,
   });
+
+  app.use(cors());
 } else {
   transporter = nodemailer.createTransport({
     host: "smtp.mailersend.net",
@@ -20,13 +26,6 @@ if (process.env.NODE_ENV === "dev") {
       pass: process.env.PASSWORD,
     },
   });
-}
-const app = express();
-app.use(express.json({ limit: "10mb" }));
-
-if (process.env.NODE_ENV === "dev") {
-  app.use(cors());
-} else {
   app.use(
     cors({
       origin: "https://datacollect-beta.vercel.app",
@@ -49,22 +48,29 @@ app.post("/send-data", async (req, res) => {
 
   const csvContent = data.join("\n");
 
-  await transporter.sendMail({
-    from: `"Collabenable" <${process.env.MAIL_FROM}>`,
-    to: process.env.MAIL_TO,
-    subject: "📊 Nouvelle données [" + fileName + "] 🎉",
-    text: "De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV.",
-    html: "<b style='font-family: Arial, sans-serif;'>De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV 🤩.</b>",
-    attachments: [
-      {
-        filename: fileName,
-        content: csvContent,
-        contentType: "text/csv",
-      },
-    ],
-  });
+  try {
+    await transporter.sendMail({
+      from: `"Collabenable" <${process.env.MAIL_FROM}>`,
+      to: process.env.MAIL_TO,
+      subject: "📊 Nouvelles données [" + fileName + "] 🎉",
+      text: "De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV.",
+      html: "<b style='font-family: Arial, sans-serif;'>De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV 🤩.</b>",
+      attachments: [
+        {
+          filename: fileName,
+          content: csvContent,
+          contentType: "text/csv",
+        },
+      ],
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: "An error occured while sending the email." });
+  }
 
-  res.send("Hello World! true mail");
+  return res.send("Email sent successfully!");
 });
 
 app.listen(port, () => {
