@@ -1,4 +1,8 @@
 export class RandomUtils {
+  static setSeed(seed: number) {
+    window.localStorage.setItem('init_seed', seed.toString())
+  }
+
   static seededRandom(seed: number) {
     let state = seed
     return () => {

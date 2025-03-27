@@ -1,23 +1,41 @@
 import './MouseMoveRecorder.scss'
 
-import { CursorAction, CursorTrackingArea } from '@components/CursorTrackingArea/CursorTrackingArea'
-import { DoubleClickItem } from '@components/DoubleClickItem/DoubleClickItem'
-import { FakeMailApp } from '@components/FakeMailApp/FakeMailApp'
-import { GraphModal } from '@components/GraphModal/GraphModal'
-import { KeyboardButton } from '@components/KeyboardButton/KeyboardButton'
-import { LeftClickItem } from '@components/LeftClickItem/LeftClickItem'
-import { Navbar } from '@components/Navbar/Navbar'
-import { RightClickItem } from '@components/RightClickItem/RightClickItem'
-import { TimerView } from '@components/TimerView/TimerView'
-import { IconClick, IconMail } from '@tabler/icons-react'
-import { TimeUtils, RandomUtils } from '@utils/TimeUtils'
+import {} from '@components/CursorTrackingArea/CursorTrackingArea'
+import {} from '@tabler/icons-react'
+import {} from '@utils/TimeUtils'
 import { FunctionComponent, useCallback, useEffect, useMemo } from 'react'
-import { useBoolean, useStateful } from 'react-hanger'
+
+import {
+  CursorAction,
+  CursorTrackingArea,
+  DoubleClickItem,
+  GraphModal,
+  KeyboardButton,
+  Navbar,
+  LeftClickItem,
+  RightClickItem,
+  TimerView,
+  FakeMailApp,
+} from '../../Components'
+import { useBoolean, useInput, useStateful } from 'react-hanger'
 import { Case, Else, If, Switch, Then } from 'react-if'
-import { Select } from '@radix-ui/themes'
+import { RandomUtils, TimeUtils } from '../../../Utils'
+import { IconClick, IconMail } from '@tabler/icons-react'
+import {
+  Button,
+  Dialog,
+  Flex,
+  Select,
+  Switch as SwitchWiget,
+  Text,
+  TextField,
+} from '@radix-ui/themes'
+import { useLocalStorage } from 'usehooks-ts'
 import './MouseMoveRecorder.scss'
 
+// const API_URL = 'http://localhost:3000'
 const API_URL = import.meta.env.VITE_API_URL
+// const API_URL = 'https://datacollect-express.vercel.app'
 
 const ITEM_WIDTH = 50
 const ITEM_HEIGHT = 50
@@ -232,42 +250,85 @@ export const MouseMoveRecorder: FunctionComponent = () => {
     isSendEmailLoading.setFalse()
   }
 
+  const [isRandomSeed, setIsRandomSeed] = useLocalStorage('isRandomSeed', true)
+  const [seed, setSeed] = useLocalStorage('seed', 1000)
+
+  const seedData = useInput(seed)
+
+  const saveSeedValue = () => {
+    setSeed(+seedData.value)
+  }
+
   return (
     <>
       <div className="MouseMoveRecorder">
         <Navbar>
-          <If condition={isRecording.value}>
-            <Then>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <TimerView seconds={time.value} />
-                &nbsp;
+          <Flex align="center" gap="2">
+            <Dialog.Root>
+              <Dialog.Trigger>
+                <Button>Modifier à jour la seed</Button>
+              </Dialog.Trigger>
+              <Dialog.Content maxWidth="450px">
+                <Dialog.Title>Modification de la seed</Dialog.Title>
+                <Flex direction="column" gap="3">
+                  <Text as="label" size="2">
+                    <Flex gap="2">
+                      <SwitchWiget
+                        size="2"
+                        onCheckedChange={setIsRandomSeed}
+                        defaultChecked={isRandomSeed}
+                      />{' '}
+                      Mettre un seed aléatoire
+                    </Flex>
+                  </Text>
+                  <div>
+                    <Text as="div" size="2" mb="1" weight="bold">
+                      Seed
+                    </Text>
+                    <TextField.Root
+                      value={seedData.value}
+                      onChange={seedData.onChange}
+                      disabled={isRandomSeed}
+                      placeholder="Un entier"
+                    />
+                  </div>
+                  <Button onClick={saveSeedValue}>Enregistrer la modifiaction</Button>
+                </Flex>
+              </Dialog.Content>
+            </Dialog.Root>
+            <If condition={isRecording.value}>
+              <Then>
+                <Flex align="center">
+                  <TimerView seconds={time.value} />
+                  &nbsp;
+                  <p className="MouseActivityTracker__instructions">
+                    Appuyez sur la touche{' '}
+                    <KeyboardButton pressed={isSpaceButtonClick.value}>Échap</KeyboardButton> de
+                    votre clavier pour areter l'enregistrement
+                  </p>
+                </Flex>
+              </Then>
+              <Else>
                 <p className="MouseActivityTracker__instructions">
                   Appuyez sur la touche{' '}
-                  <KeyboardButton pressed={isSpaceButtonClick.value}>Échap</KeyboardButton> de votre
-                  clavier pour arreter l'enregistrement
+                  <KeyboardButton pressed={isSpaceButtonClick.value}>Espace</KeyboardButton> de
+                  votre clavier pour lancer l'enregistrement
                 </p>
-              </div>
-            </Then>
-            <Else>
-              <p className="MouseActivityTracker__instructions">
-                Appuyez sur la touche{' '}
-                <KeyboardButton pressed={isSpaceButtonClick.value}>Espace</KeyboardButton> de votre
-                clavier pour lancer l'enregistrement
-              </p>
-            </Else>
-          </If>
-          <Select.Root
-            onValueChange={(val) => selectedOption.setValue(val as ViewMode)}
-            defaultValue="mail"
-          >
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Group>
-                <Select.Item value="mail">Faux client mail</Select.Item>
-                <Select.Item value="forms">Formes interactives</Select.Item>
-              </Select.Group>
-            </Select.Content>
-          </Select.Root>
+              </Else>
+            </If>
+            <Select.Root
+              onValueChange={(val) => selectedOption.setValue(val as ViewMode)}
+              defaultValue="mail"
+            >
+              <Select.Trigger />
+              <Select.Content>
+                <Select.Group>
+                  <Select.Item value="mail">Faux client mail</Select.Item>
+                  <Select.Item value="forms">Formes interactives</Select.Item>
+                </Select.Group>
+              </Select.Content>
+            </Select.Root>
+          </Flex>
         </Navbar>
         <CursorTrackingArea
           onSizeChange={onCursorTrackingAreaSizeChange}
