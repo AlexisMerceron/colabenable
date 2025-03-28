@@ -1,65 +1,82 @@
-import express from 'express'
-import nodemailer from 'nodemailer'
-import cors from 'cors'
+import express from "express";
+import nodemailer from "nodemailer";
+import cors from "cors";
+import dotenv from "dotenv";
 
-const MAIL = 'MS_M6lMTb@trial-pr9084z0n38lw63d.mlsender.net'
-const PASSWORD = 'mssp.PhWti8z.0r83ql3jy1vgzw1j.1QYCcCi'
+dotenv.config();
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.mailersend.net",
-  port: 587,
-  auth: {
-    user: MAIL,
-    pass: PASSWORD
-  }
-})
+let transporter;
+const app = express();
+app.use(express.json({ limit: "10mb" }));
 
-// const transporter = nodemailer.createTransport({
-//   host: "0.0.0.0",
-//   port: 1025,
-// })
+if (process.env.NODE_ENV === "dev") {
+  transporter = nodemailer.createTransport({
+    host: "0.0.0.0",
+    port: 1025,
+    direct: true,
+  });
 
-const app = express()
-app.use(express.json({ limit: '10mb' }))
-app.use(cors({
-  origin: 'https://datacollect-beta.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type'],
-}))
+  app.use(cors());
+} else {
+  transporter = nodemailer.createTransport({
+    host: "smtp.mailersend.net",
+    port: 587,
+    auth: {
+      user: process.env.MAIL_FROM,
+      pass: process.env.PASSWORD,
+    },
+  });
+  app.use(
+    cors({
+      origin: "https://datacollect-beta.vercel.app",
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      allowedHeaders: ["Content-Type"],
+    })
+  );
+}
 
-const port = 3000
+const port = 3000;
 
-app.post('/send-data', async (req, res) => {
-  const { data, fileName } = req.body
+app.post("/send-data", async (req, res) => {
+  const { data, fileName } = req.body;
 
   if (!data || !Array.isArray(data)) {
-    return res.status(400).json({ error: 'Invalid data format. Expected an array.' });
+    return res
+      .status(400)
+      .json({ error: "Invalid data format. Expected an array." });
   }
 
-  const csvContent = data.join('\n')
+  const csvContent = data.join("\n");
 
-  await transporter.sendMail({
-    from: `"Collabenable" <${MAIL}>`,
-    to: "pralphanor@lrtechnologies.fr",
-    subject: "📊 Nouvelle données [" + fileName + "] 🎉",
-    text: "De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV.",
-    html: "<b style='font-family: Arial, sans-serif;'>De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV 🤩.</b>",
-    attachments: [
-      {
+  try {
+    await transporter.sendMail({
+      from: `"Collabenable" <${process.env.MAIL_FROM}>`,
+      to: process.env.MAIL_TO,
+      subject: "📊 Nouvelles données [" + fileName + "] 🎉",
+      text: "De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV.",
+      html: "<b style='font-family: Arial, sans-serif;'>De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV 🤩.</b>",
+      attachments: [
+        {
           filename: fileName,
           content: csvContent,
-          contentType: 'text/csv'
-      }
-    ]
-  })
+          contentType: "text/csv",
+        },
+      ],
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: "An error occured while sending the email." });
+  }
 
-  res.send('Hello World! true mail')
-})
+  return res.send("Email sent successfully!");
+});
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Example app listening on port ${port}`);
+});
 
-app.get('/version', async (req, res) => {
-  res.send('2.1.2')
-})
+app.get("/version", async (_, res) => {
+  res.send("2.1.2");
+});
