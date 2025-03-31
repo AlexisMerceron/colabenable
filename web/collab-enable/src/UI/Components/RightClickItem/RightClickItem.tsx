@@ -1,5 +1,6 @@
-import { FunctionComponent, MouseEvent } from 'react'
 import './RightClickItem.scss'
+
+import { FunctionComponent, MouseEvent } from 'react'
 
 interface RightClickItemProps {
   x: number

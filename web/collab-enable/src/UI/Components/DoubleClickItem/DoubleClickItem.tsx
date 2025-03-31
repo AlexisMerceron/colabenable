@@ -1,5 +1,6 @@
-import { FunctionComponent, MouseEvent } from 'react'
 import './DoubleClickItem.scss'
+
+import { FunctionComponent, MouseEvent } from 'react'
 
 interface DoubleClickItemProps {
   x: number

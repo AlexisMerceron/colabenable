@@ -1,7 +1,8 @@
-import { MouseMoveRecorder } from './UI/Pages'
-import { Theme } from '@radix-ui/themes'
 import '@radix-ui/themes/styles.css'
 import './App.css'
+
+import { MouseMoveRecorder } from '@pages/MouseMoveRecorder/MouseMoveRecorder'
+import { Theme } from '@radix-ui/themes'
 
 function App() {
   return (

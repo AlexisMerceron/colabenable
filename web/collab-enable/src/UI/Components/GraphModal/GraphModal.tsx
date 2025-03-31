@@ -1,10 +1,11 @@
+import './GraphModal.scss'
+
+import { CursorAction } from '@components/CursorTrackingArea/CursorTrackingArea'
+import { Button, Theme } from '@radix-ui/themes'
+import { IconDownload, IconSend, IconX } from '@tabler/icons-react'
+import ReactECharts from 'echarts-for-react'
 import { FunctionComponent, useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import ReactECharts from 'echarts-for-react'
-import { CursorAction } from '../CursorTrackingArea/CursorTrackingArea'
-import { IconDownload, IconSend, IconX } from '@tabler/icons-react'
-import { Button, Theme } from '@radix-ui/themes'
-import './GraphModal.scss'
 
 interface GraphModalProps {
   open?: boolean
