@@ -7,8 +7,6 @@ import { Badge, Box, Button, Flex, Heading, Text, TextArea } from '@radix-ui/the
 import { RandomUtils } from '../../../Utils'
 import './FakeMailApp.scss'
 
-const random = RandomUtils.seededRandom(9000)
-
 interface FakeEmail {
   id: number
   fullName: string
@@ -119,7 +117,7 @@ export const FakeMailApp: FunctionComponent = () => {
   }
 
   const generateRandomMission = useCallback(() => {
-    const randomTaskIndex = Math.floor(random() * tasks.length)
+    const randomTaskIndex = Math.floor(RandomUtils.getNumber() * tasks.length)
     let task: Task = 'email_send'
     if (fakeMails.value.length > 0) {
       task = tasks[randomTaskIndex]
@@ -127,10 +125,11 @@ export const FakeMailApp: FunctionComponent = () => {
 
     if (['email_delete', 'email_send', 'email_open', 'email_reply'].includes(task)) {
       let randomFullname =
-        fakeMails.value[Math.floor(random() * fakeMails.value.length)]?.fullName ?? ''
+        fakeMails.value[Math.floor(RandomUtils.getNumber() * fakeMails.value.length)]?.fullName ??
+        ''
 
       if (task === 'email_send') {
-        randomFullname = recipientNames[Math.floor(random() * recipientNames.length)]
+        randomFullname = recipientNames[Math.floor(RandomUtils.getNumber() * recipientNames.length)]
       }
 
       return {

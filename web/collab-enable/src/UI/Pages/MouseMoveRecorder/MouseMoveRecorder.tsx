@@ -30,7 +30,6 @@ import {
   Text,
   TextField,
 } from '@radix-ui/themes'
-import { useLocalStorage } from 'usehooks-ts'
 import './MouseMoveRecorder.scss'
 
 // const API_URL = 'http://localhost:3000'
@@ -57,17 +56,15 @@ interface InteractionData {
   yEnd?: number
 }
 
-const random = RandomUtils.seededRandom(9000)
-
 const getRandomInteractionType = (): InteractionType => {
   const values = Object.values(InteractionType)
-  const randomIndex = Math.floor(random() * values.length)
+  const randomIndex = Math.floor(RandomUtils.getNumber() * values.length)
   return values[randomIndex]
 }
 
 const getRandomPosition = (maxX: number, maxY: number) => {
-  const rx = random()
-  const ry = random()
+  const rx = RandomUtils.getNumber()
+  const ry = RandomUtils.getNumber()
 
   const x = Math.floor(rx * (maxX - ITEM_WIDTH))
   const y = Math.floor(ry * (maxY - ITEM_HEIGHT))
@@ -213,6 +210,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
       if (e.code === 'Space') {
         isSpaceButtonClick.setTrue()
         isRecording.setTrue()
+        RandomUtils.resetSeed()
         generateRandomInteraction()
       } else if (e.code === 'Escape' && isRecording.value) {
         stopRecord()
@@ -250,13 +248,10 @@ export const MouseMoveRecorder: FunctionComponent = () => {
     isSendEmailLoading.setFalse()
   }
 
-  const [isRandomSeed, setIsRandomSeed] = useLocalStorage('isRandomSeed', true)
-  const [seed, setSeed] = useLocalStorage('seed', 1000)
-
-  const seedData = useInput(seed)
+  const seedData = useInput(RandomUtils.getInitSeed())
 
   const saveSeedValue = () => {
-    setSeed(+seedData.value)
+    RandomUtils.setInitSeed(+seedData.value)
   }
 
   return (
@@ -264,40 +259,11 @@ export const MouseMoveRecorder: FunctionComponent = () => {
       <div className="MouseMoveRecorder">
         <Navbar>
           <Flex align="center" gap="2">
-            <Dialog.Root>
-              <Dialog.Trigger>
-                <Button>Modifier à jour la seed</Button>
-              </Dialog.Trigger>
-              <Dialog.Content maxWidth="450px">
-                <Dialog.Title>Modification de la seed</Dialog.Title>
-                <Flex direction="column" gap="3">
-                  <Text as="label" size="2">
-                    <Flex gap="2">
-                      <SwitchWiget
-                        size="2"
-                        onCheckedChange={setIsRandomSeed}
-                        defaultChecked={isRandomSeed}
-                      />{' '}
-                      Mettre un seed aléatoire
-                    </Flex>
-                  </Text>
-                  <div>
-                    <Text as="div" size="2" mb="1" weight="bold">
-                      Seed
-                    </Text>
-                    <TextField.Root
-                      value={seedData.value}
-                      onChange={seedData.onChange}
-                      disabled={isRandomSeed}
-                      placeholder="Un entier"
-                    />
-                  </div>
-                  <Button onClick={saveSeedValue}>Enregistrer la modifiaction</Button>
-                </Flex>
-              </Dialog.Content>
-            </Dialog.Root>
             <If condition={isRecording.value}>
               <Then>
+                <Text color="blue">
+                  (seed : {RandomUtils.isRandomSeed() ? 'aléatoire' : RandomUtils.getInitSeed()})
+                </Text>
                 <Flex align="center">
                   <TimerView seconds={time.value} />
                   &nbsp;
@@ -309,6 +275,46 @@ export const MouseMoveRecorder: FunctionComponent = () => {
                 </Flex>
               </Then>
               <Else>
+                <Dialog.Root>
+                  <Dialog.Trigger>
+                    <Button>Mettre à jour le seed</Button>
+                  </Dialog.Trigger>
+                  <Dialog.Content maxWidth="450px">
+                    <Dialog.Title>Modification de la seed</Dialog.Title>
+                    <Flex direction="column" gap="3">
+                      <Text as="label" size="2">
+                        <Flex gap="2">
+                          <SwitchWiget
+                            size="2"
+                            onCheckedChange={(val) => {
+                              if (val) {
+                                RandomUtils.activeRandom()
+                              } else {
+                                RandomUtils.disabledRandom()
+                              }
+                            }}
+                            defaultChecked={RandomUtils.isRandomSeed()}
+                          />{' '}
+                          Mettre un seed aléatoire
+                        </Flex>
+                      </Text>
+                      <div>
+                        <Text as="div" size="2" mb="1" weight="bold">
+                          Seed
+                        </Text>
+                        <TextField.Root
+                          value={RandomUtils.isRandomSeed() ? '' : seedData.value}
+                          onChange={seedData.onChange}
+                          disabled={RandomUtils.isRandomSeed()}
+                          placeholder="Un entier"
+                        />
+                      </div>
+                      <Dialog.Close>
+                        <Button onClick={saveSeedValue}>Enregistrer la modifiaction</Button>
+                      </Dialog.Close>
+                    </Flex>
+                  </Dialog.Content>
+                </Dialog.Root>
                 <p className="MouseActivityTracker__instructions">
                   Appuyez sur la touche{' '}
                   <KeyboardButton pressed={isSpaceButtonClick.value}>Espace</KeyboardButton> de
