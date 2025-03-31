@@ -1,10 +1,12 @@
-import { FunctionComponent, useCallback, useMemo } from 'react'
-import { Mail, MailItem, NewMail } from './slices'
-import { If, Then, Else } from 'react-if'
-import { useStateful, useArray, useBoolean, useInput } from 'react-hanger'
-import { IconClipboardList, IconForbid2, IconHelp, IconShare3 } from '@tabler/icons-react'
-import { Badge, Box, Button, Flex, Heading, Text, TextArea } from '@radix-ui/themes'
 import './FakeMailApp.scss'
+
+import { Badge, Box, Button, Flex, Heading, Text, TextArea } from '@radix-ui/themes'
+import { IconClipboardList, IconForbid2, IconHelp, IconShare3 } from '@tabler/icons-react'
+import { FunctionComponent, useCallback, useMemo } from 'react'
+import { useArray, useBoolean, useInput,useStateful } from 'react-hanger'
+import { Else,If, Then } from 'react-if'
+
+import { Mail, MailItem, NewMail } from './slices'
 
 interface FakeEmail {
   id: number

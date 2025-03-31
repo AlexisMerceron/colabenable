@@ -1,6 +1,7 @@
-import { FunctionComponent, PropsWithChildren } from 'react'
-import clsx from 'clsx'
 import './KeyboardButton.scss'
+
+import clsx from 'clsx'
+import { FunctionComponent, PropsWithChildren } from 'react'
 
 interface KeyboardButtonProps extends PropsWithChildren {
   pressed?: boolean
