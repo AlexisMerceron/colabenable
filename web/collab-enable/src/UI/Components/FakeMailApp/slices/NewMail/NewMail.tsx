@@ -1,8 +1,9 @@
-import { FunctionComponent } from 'react'
-import { useInput } from 'react-hanger'
+import './NewMail.scss'
+
 import { Button, Flex, Text, TextArea, TextField } from '@radix-ui/themes'
 import { IconSend } from '@tabler/icons-react'
-import './NewMail.scss'
+import { FunctionComponent } from 'react'
+import { useInput } from 'react-hanger'
 
 export interface Mail {
   to: string

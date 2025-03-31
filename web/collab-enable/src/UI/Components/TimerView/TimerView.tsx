@@ -1,6 +1,7 @@
-import { FunctionComponent } from 'react'
 import './TimerView.scss'
-import { TimeUtils } from '../../../Utils'
+
+import { TimeUtils } from '@utils/TimeUtils'
+import { FunctionComponent } from 'react'
 
 interface TimerViewProps {
   seconds: number

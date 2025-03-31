@@ -1,7 +1,8 @@
+import './CursorTrackingArea.scss'
+
+import clsx from 'clsx'
 import { FunctionComponent, MouseEvent, PropsWithChildren, useEffect, useRef } from 'react'
 import { useBoolean } from 'react-hanger'
-import clsx from 'clsx'
-import './CursorTrackingArea.scss'
 
 export type CursorAction = 'left_click' | 'double_click' | 'right_click' | 'drag' | 'move'
 

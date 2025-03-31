@@ -1,9 +1,10 @@
-import { FunctionComponent } from 'react'
-import { Menu, TriggerEvent, useContextMenu } from 'react-contexify'
-import clsx from 'clsx'
 import 'react-contexify/ReactContexify.css'
 import './MailItem.scss'
+
 import { Flex, Text } from '@radix-ui/themes'
+import clsx from 'clsx'
+import { FunctionComponent } from 'react'
+import { Menu, TriggerEvent, useContextMenu } from 'react-contexify'
 
 interface MailItemProps {
   fullName?: string

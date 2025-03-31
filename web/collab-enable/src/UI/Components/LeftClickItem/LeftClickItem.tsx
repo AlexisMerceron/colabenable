@@ -1,5 +1,6 @@
-import { FunctionComponent, MouseEvent } from 'react'
 import './LeftClickItem.scss'
+
+import { FunctionComponent, MouseEvent } from 'react'
 
 interface OnClickItemProps {
   x: number
