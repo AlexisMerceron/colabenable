@@ -71,8 +71,13 @@ const getRandomPosition = (maxX: number, maxY: number) => {
   return { x, y }
 }
 
-const composeName = (seconds: number, appMode: string) =>
-  `${Date.now()}_${TimeUtils.formatSeconds(seconds)}_${appMode}_interactions.csv`
+const composeName = (seconds: number, appMode: string) => {
+  const timestamp = Date.now()
+  const formattedTime = TimeUtils.formatSeconds(seconds)
+  const seedPart = RandomUtils.isRandomSeed() ? '' : `seed-${RandomUtils.getInitSeed()}_`
+
+  return `${timestamp}_${seedPart}${formattedTime}_${appMode}_interactions.csv`
+}
 
 export const MouseMoveRecorder: FunctionComponent = () => {
   const currentInteraction = useStateful<InteractionData | undefined>({
