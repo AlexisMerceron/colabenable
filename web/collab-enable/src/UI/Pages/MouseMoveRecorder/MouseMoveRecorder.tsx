@@ -1,23 +1,23 @@
-import "./MouseMoveRecorder.scss";
+import './MouseMoveRecorder.scss';
 
 import {
   CursorAction,
   CursorTrackingArea,
-} from "@components/CursorTrackingArea/CursorTrackingArea";
-import { DoubleClickItem } from "@components/DoubleClickItem/DoubleClickItem";
-import { FakeMailApp } from "@components/FakeMailApp/FakeMailApp";
-import { GraphModal } from "@components/GraphModal/GraphModal";
-import { KeyboardButton } from "@components/KeyboardButton/KeyboardButton";
-import { LeftClickItem } from "@components/LeftClickItem/LeftClickItem";
-import { Navbar } from "@components/Navbar/Navbar";
-import { RightClickItem } from "@components/RightClickItem/RightClickItem";
-import { TimerView } from "@components/TimerView/TimerView";
-import { IconClick, IconMail } from "@tabler/icons-react";
-import { TimeUtils } from "@utils/TimeUtils";
-import { FunctionComponent, useCallback, useEffect, useMemo } from "react";
-import { useBoolean, useStateful } from "react-hanger";
-import { Case, Else, If, Switch, Then } from "react-if";
-import Select from "react-select";
+} from '@components/CursorTrackingArea/CursorTrackingArea';
+import { DoubleClickItem } from '@components/DoubleClickItem/DoubleClickItem';
+import { FakeMailApp } from '@components/FakeMailApp/FakeMailApp';
+import { GraphModal } from '@components/GraphModal/GraphModal';
+import { KeyboardButton } from '@components/KeyboardButton/KeyboardButton';
+import { LeftClickItem } from '@components/LeftClickItem/LeftClickItem';
+import { Navbar } from '@components/Navbar/Navbar';
+import { RightClickItem } from '@components/RightClickItem/RightClickItem';
+import { TimerView } from '@components/TimerView/TimerView';
+import { IconClick, IconMail } from '@tabler/icons-react';
+import { TimeUtils } from '@utils/TimeUtils';
+import { FunctionComponent, useCallback, useEffect, useMemo } from 'react';
+import { useBoolean, useStateful } from 'react-hanger';
+import { Case, Else, If, Switch, Then } from 'react-if';
+import Select from 'react-select';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -25,20 +25,32 @@ const ITEM_WIDTH = 50;
 const ITEM_HEIGHT = 50;
 
 interface ViewMode {
-  value: "forms" | "mail";
+  value: 'forms' | 'mail';
+  label: string;
+}
+
+interface SelectTimer {
+  value: number;
   label: string;
 }
 
 const options: ViewMode[] = [
-  { value: "forms", label: "Formes interactives" },
-  { value: "mail", label: "Faux client mail" },
+  { value: 'forms', label: 'Formes interactives' },
+  { value: 'mail', label: 'Faux client mail' },
+];
+
+const optionsTime: SelectTimer[] = [
+  { value: -1, label: 'Aucune' },
+  { value: 30, label: '30 secondes' },
+  { value: 60, label: '60 secondes' },
+  { value: 120, label: '120 secondes' },
 ];
 
 enum InteractionType {
-  LEFT_CLICK = "LEFT_CLICK",
-  DOUBLE_CLICK = "DOUBLE_CLICK",
-  RIGHT_CLICK = "RIGHT_CLICK",
-  DRAG = "DRAG",
+  LEFT_CLICK = 'LEFT_CLICK',
+  DOUBLE_CLICK = 'DOUBLE_CLICK',
+  RIGHT_CLICK = 'RIGHT_CLICK',
+  DRAG = 'DRAG',
 }
 
 interface InteractionData {
@@ -67,6 +79,11 @@ const composeName = (seconds: number, appMode: string) =>
   )}_${appMode}_interactions.csv`;
 
 export const MouseMoveRecorder: FunctionComponent = () => {
+  
+  const selectedOption = useStateful<ViewMode | null>(options[1]);
+  const selectedTimeOption = useStateful<SelectTimer | null>(optionsTime[0]);
+
+  const isSendEmailLoading = useBoolean(false);
   const currentInteraction = useStateful<InteractionData | undefined>({
     x: 10,
     y: 300,
@@ -146,7 +163,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
     }
   }, [currentInteraction.value, generateRandomInteraction]);
 
-  const debug = useStateful("");
+  const debug = useStateful('');
 
   const onEvent = (x: number, y: number, action: CursorAction) => {
     debug.setValue(`${Date.now()},${x},${y},${action}`);
@@ -163,35 +180,25 @@ export const MouseMoveRecorder: FunctionComponent = () => {
   >([]);
 
   const downloadCSV = () => {
-    const headers = "time,x,y,action\n";
+    const headers = 'time,x,y,action\n';
     const rows = interactions.value
       .map(({ time, x, y, action }) => `${time},${x},${y},${action}`)
-      .join("\n");
+      .join('\n');
     const csvContent = headers + rows;
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = composeName(
       recordedTime.value,
-      selectedOption.value?.value ?? ""
+      selectedOption.value?.value ?? ''
     );
     a.click();
 
     URL.revokeObjectURL(url);
   };
-
-  useEffect(() => {
-    if (isRecording.value) {
-      const interval = setInterval(() => {
-        time.setValue(time.value + 1);
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-    time.setValue(0);
-  }, [isRecording.value, time]);
 
   const stopRecord = useCallback(() => {
     if (isRecording.value) {
@@ -201,17 +208,28 @@ export const MouseMoveRecorder: FunctionComponent = () => {
     }
   }, [isRecording, recordedTime, time.value, showGraphModal]);
 
+  useEffect(() => {
+    if (isRecording.value && selectedTimeOption.value?.value !== time.value) {
+      const interval = setInterval(() => {
+        time.setValue(time.value + 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+    stopRecord();
+    time.setValue(0);
+  }, [isRecording.value, time, selectedTimeOption, stopRecord]);
+
   const onKeyboardPress = useCallback(
     (e: KeyboardEvent) => {
       if (showGraphModal.value) {
         return;
       }
 
-      if (e.code === "Space") {
+      if (e.code === 'Space') {
         isSpaceButtonClick.setTrue();
         isRecording.setTrue();
         generateRandomInteraction();
-      } else if (e.code === "Escape" && isRecording.value) {
+      } else if (e.code === 'Escape' && isRecording.value) {
         stopRecord();
       }
     },
@@ -225,31 +243,27 @@ export const MouseMoveRecorder: FunctionComponent = () => {
   );
 
   useEffect(() => {
-    window.addEventListener("keydown", onKeyboardPress);
-    window.addEventListener("keyup", isSpaceButtonClick.setFalse);
+    window.addEventListener('keydown', onKeyboardPress);
+    window.addEventListener('keyup', isSpaceButtonClick.setFalse);
 
     return () => {
-      window.removeEventListener("keydown", onKeyboardPress);
-      window.removeEventListener("keyup", isSpaceButtonClick.setFalse);
+      window.removeEventListener('keydown', onKeyboardPress);
+      window.removeEventListener('keyup', isSpaceButtonClick.setFalse);
     };
   }, [isSpaceButtonClick.setFalse, onKeyboardPress]);
-
-  const selectedOption = useStateful<ViewMode | null>(options[1]);
-
-  const isSendEmailLoading = useBoolean(false);
 
   const sendDataByMail = async (data: string[]) => {
     isSendEmailLoading.setTrue();
     await fetch(`${API_URL}/send-data`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         data,
         fileName: composeName(
           recordedTime.value,
-          selectedOption.value?.value ?? ""
+          selectedOption.value?.value ?? ''
         ),
       }),
     });
@@ -262,24 +276,24 @@ export const MouseMoveRecorder: FunctionComponent = () => {
         <Navbar>
           <If condition={isRecording.value}>
             <Then>
-              <div style={{ display: "flex", alignItems: "center" }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
                 <TimerView seconds={time.value} />
                 &nbsp;
                 <p className="MouseActivityTracker__instructions">
-                  Appuyez sur la touche{" "}
+                  Appuyez sur la touche{' '}
                   <KeyboardButton pressed={isSpaceButtonClick.value}>
                     Échap
-                  </KeyboardButton>{" "}
+                  </KeyboardButton>{' '}
                   de votre clavier pour arreter l'enregistrement
                 </p>
               </div>
             </Then>
             <Else>
               <p className="MouseActivityTracker__instructions">
-                Appuyez sur la touche{" "}
+                Appuyez sur la touche{' '}
                 <KeyboardButton pressed={isSpaceButtonClick.value}>
                   Espace
-                </KeyboardButton>{" "}
+                </KeyboardButton>{' '}
                 de votre clavier pour lancer l'enregistrement
               </p>
             </Else>
@@ -291,6 +305,14 @@ export const MouseMoveRecorder: FunctionComponent = () => {
             onChange={selectedOption.setValue}
             options={options}
           />
+          <p className="MouseActivityTracker__instructions">Durée: </p>
+          <Select
+            className="SelectTime"
+            classNamePrefix="SelectTime"
+            defaultValue={selectedTimeOption.value}
+            onChange={selectedTimeOption.setValue}
+            options={optionsTime}
+          />
         </Navbar>
         <CursorTrackingArea
           onSizeChange={onCursorTrackingAreaSizeChange}
@@ -298,7 +320,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
           recording={isRecording.value}
         >
           <Switch>
-            <Case condition={selectedOption.value?.value === "mail"}>
+            <Case condition={selectedOption.value?.value === 'mail'}>
               <If condition={isRecording.value}>
                 <Then>
                   <FakeMailApp />
@@ -315,7 +337,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
                 </Else>
               </If>
             </Case>
-            <Case condition={selectedOption.value?.value === "forms"}>
+            <Case condition={selectedOption.value?.value === 'forms'}>
               <If condition={isRecording.value}>
                 <Then>{interactionItemView}</Then>
                 <Else>
