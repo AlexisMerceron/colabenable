@@ -31,8 +31,6 @@ import {
 } from '@radix-ui/themes'
 import './MouseMoveRecorder.scss'
 
-// const API_URL = 'http://localhost:3000'
-// const API_URL = 'https://datacollect-express.vercel.app'
 const API_URL = import.meta.env.VITE_API_URL
 
 const ITEM_WIDTH = 50
