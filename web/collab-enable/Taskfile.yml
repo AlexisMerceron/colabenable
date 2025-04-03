@@ -1,0 +1,8 @@
+version: '3'
+
+tasks:
+  dev:
+    silent: true
+    interactive: true
+    cmds:
+      - pnpm dev

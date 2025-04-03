@@ -1,119 +1,129 @@
-import "./MouseMoveRecorder.scss";
+import './MouseMoveRecorder.scss'
 
 import {
+  FakeMailApp,
   CursorAction,
   CursorTrackingArea,
-} from "@components/CursorTrackingArea/CursorTrackingArea";
-import { DoubleClickItem } from "@components/DoubleClickItem/DoubleClickItem";
-import { FakeMailApp } from "@components/FakeMailApp/FakeMailApp";
-import { GraphModal } from "@components/GraphModal/GraphModal";
-import { KeyboardButton } from "@components/KeyboardButton/KeyboardButton";
-import { LeftClickItem } from "@components/LeftClickItem/LeftClickItem";
-import { Navbar } from "@components/Navbar/Navbar";
-import { RightClickItem } from "@components/RightClickItem/RightClickItem";
-import { TimerView } from "@components/TimerView/TimerView";
-import { IconClick, IconMail } from "@tabler/icons-react";
-import { TimeUtils } from "@utils/TimeUtils";
-import { FunctionComponent, useCallback, useEffect, useMemo } from "react";
-import { useBoolean, useStateful } from "react-hanger";
-import { Case, Else, If, Switch, Then } from "react-if";
-import Select from "react-select";
+  DoubleClickItem,
+  GraphModal,
+  KeyboardButton,
+  Navbar,
+  LeftClickItem,
+  RightClickItem,
+  TimerView,
+} from '@components'
+import {} from '@tabler/icons-react'
+import { TimeUtils } from '@utils/TimeUtils'
+import { RandomUtils } from '@utils'
+import { FunctionComponent, useCallback, useEffect, useMemo } from 'react'
 
-const API_URL = import.meta.env.VITE_API_URL;
+import { useBoolean, useInput, useStateful } from 'react-hanger'
+import { Case, Else, If, Switch, Then } from 'react-if'
+import { IconClick, IconMail } from '@tabler/icons-react'
+import {
+  Button,
+  Dialog,
+  Flex,
+  Select,
+  Switch as SwitchWiget,
+  Text,
+  TextField,
+} from '@radix-ui/themes'
+import './MouseMoveRecorder.scss'
 
-const ITEM_WIDTH = 50;
-const ITEM_HEIGHT = 50;
+// const API_URL = 'http://localhost:3000'
+// const API_URL = 'https://datacollect-express.vercel.app'
+const API_URL = import.meta.env.VITE_API_URL
 
-interface ViewMode {
-  value: "forms" | "mail";
-  label: string;
-}
+const ITEM_WIDTH = 50
+const ITEM_HEIGHT = 50
 
-const options: ViewMode[] = [
-  { value: "forms", label: "Formes interactives" },
-  { value: "mail", label: "Faux client mail" },
-];
+type ViewMode = 'forms' | 'mail'
 
 enum InteractionType {
-  LEFT_CLICK = "LEFT_CLICK",
-  DOUBLE_CLICK = "DOUBLE_CLICK",
-  RIGHT_CLICK = "RIGHT_CLICK",
-  DRAG = "DRAG",
+  LEFT_CLICK = 'LEFT_CLICK',
+  DOUBLE_CLICK = 'DOUBLE_CLICK',
+  RIGHT_CLICK = 'RIGHT_CLICK',
+  DRAG = 'DRAG',
 }
 
 interface InteractionData {
-  x: number;
-  y: number;
-  type: InteractionType;
-  xEnd?: number;
-  yEnd?: number;
+  x: number
+  y: number
+  type: InteractionType
+  xEnd?: number
+  yEnd?: number
 }
 
 const getRandomInteractionType = (): InteractionType => {
-  const values = Object.values(InteractionType);
-  const randomIndex = Math.floor(Math.random() * values.length);
-  return values[randomIndex];
-};
+  const values = Object.values(InteractionType)
+  const randomIndex = Math.floor(RandomUtils.getNumber() * values.length)
+  return values[randomIndex]
+}
 
 const getRandomPosition = (maxX: number, maxY: number) => {
-  const x = Math.floor(Math.random() * (maxX - ITEM_WIDTH));
-  const y = Math.floor(Math.random() * (maxY - ITEM_HEIGHT));
-  return { x, y };
-};
+  const rx = RandomUtils.getNumber()
+  const ry = RandomUtils.getNumber()
 
-const composeName = (seconds: number, appMode: string) =>
-  `${Date.now()}_${TimeUtils.formatSeconds(
-    seconds
-  )}_${appMode}_interactions.csv`;
+  const x = Math.floor(rx * (maxX - ITEM_WIDTH))
+  const y = Math.floor(ry * (maxY - ITEM_HEIGHT))
+  return { x, y }
+}
+
+const composeName = (seconds: number, appMode: string) => {
+  const timestamp = Date.now()
+  const formattedTime = TimeUtils.formatSeconds(seconds)
+  const seedPart = RandomUtils.isRandomSeed() ? '' : `seed-${RandomUtils.getInitSeed()}_`
+
+  return `${timestamp}_${seedPart}${formattedTime}_${appMode}_interactions.csv`
+}
 
 export const MouseMoveRecorder: FunctionComponent = () => {
   const currentInteraction = useStateful<InteractionData | undefined>({
     x: 10,
     y: 300,
     type: InteractionType.LEFT_CLICK,
-  });
-  const cursorTrackingAreaSize = useStateful<
-    { w: number; h: number } | undefined
-  >(undefined);
+  })
+  const cursorTrackingAreaSize = useStateful<{ w: number; h: number } | undefined>(undefined)
 
-  const showGraphModal = useBoolean(false);
-  const isSpaceButtonClick = useBoolean(false);
-  const isRecording = useBoolean(false);
+  const showGraphModal = useBoolean(false)
+  const isSpaceButtonClick = useBoolean(false)
+  const isRecording = useBoolean(false)
 
-  const time = useStateful(0);
-  const recordedTime = useStateful(0);
+  const time = useStateful(0)
+  const recordedTime = useStateful(0)
 
   const onCursorTrackingAreaSizeChange = (w: number, h: number) => {
-    cursorTrackingAreaSize.setValue({ w, h });
-  };
+    cursorTrackingAreaSize.setValue({ w, h })
+  }
 
   const generateRandomInteraction = useCallback(() => {
     const { x, y } = getRandomPosition(
       cursorTrackingAreaSize.value?.w ?? 0,
-      cursorTrackingAreaSize.value?.h ?? 0
-    );
-    const interactionType = getRandomInteractionType();
+      cursorTrackingAreaSize.value?.h ?? 0,
+    )
+    const interactionType = getRandomInteractionType()
 
     if (interactionType === InteractionType.DRAG) {
       const { x: xEnd, y: yEnd } = getRandomPosition(
         cursorTrackingAreaSize.value?.w ?? 0,
-        cursorTrackingAreaSize.value?.h ?? 0
-      );
+        cursorTrackingAreaSize.value?.h ?? 0,
+      )
       currentInteraction.setValue({
         x,
         y,
         type: InteractionType.LEFT_CLICK,
         xEnd,
         yEnd,
-      });
+      })
     } else {
       currentInteraction.setValue({
         x,
         y,
         type: interactionType,
-      });
+      })
     }
-  }, [currentInteraction, cursorTrackingAreaSize.value]);
+  }, [currentInteraction, cursorTrackingAreaSize.value])
 
   const interactionItemView = useMemo(() => {
     switch (currentInteraction.value?.type) {
@@ -124,7 +134,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
             y={currentInteraction.value.y}
             onResolve={generateRandomInteraction}
           />
-        );
+        )
 
       case InteractionType.DOUBLE_CLICK:
         return (
@@ -133,7 +143,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
             y={currentInteraction.value.y}
             onResolve={generateRandomInteraction}
           />
-        );
+        )
 
       case InteractionType.RIGHT_CLICK:
         return (
@@ -142,155 +152,193 @@ export const MouseMoveRecorder: FunctionComponent = () => {
             y={currentInteraction.value.y}
             onResolve={generateRandomInteraction}
           />
-        );
+        )
     }
-  }, [currentInteraction.value, generateRandomInteraction]);
+  }, [currentInteraction.value, generateRandomInteraction])
 
-  const debug = useStateful("");
+  const debug = useStateful('')
 
   const onEvent = (x: number, y: number, action: CursorAction) => {
-    debug.setValue(`${Date.now()},${x},${y},${action}`);
+    debug.setValue(`${Date.now()},${x},${y},${action}`)
     if (isRecording.value) {
-      interactions.setValue([
-        ...interactions.value,
-        { time: Date.now(), x, y, action },
-      ]);
+      interactions.setValue([...interactions.value, { time: Date.now(), x, y, action }])
     }
-  };
+  }
 
-  const interactions = useStateful<
-    { time: number; x: number; y: number; action: CursorAction }[]
-  >([]);
+  const interactions = useStateful<{ time: number; x: number; y: number; action: CursorAction }[]>(
+    [],
+  )
 
   const downloadCSV = () => {
-    const headers = "time,x,y,action\n";
+    const headers = 'time,x,y,action\n'
     const rows = interactions.value
       .map(({ time, x, y, action }) => `${time},${x},${y},${action}`)
-      .join("\n");
-    const csvContent = headers + rows;
+      .join('\n')
+    const csvContent = headers + rows
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = composeName(
-      recordedTime.value,
-      selectedOption.value?.value ?? ""
-    );
-    a.click();
+    const a = document.createElement('a')
+    a.href = url
+    a.download = composeName(recordedTime.value, selectedOption.value ?? '')
+    a.click()
 
-    URL.revokeObjectURL(url);
-  };
+    URL.revokeObjectURL(url)
+  }
 
   useEffect(() => {
     if (isRecording.value) {
       const interval = setInterval(() => {
-        time.setValue(time.value + 1);
-      }, 1000);
-      return () => clearInterval(interval);
+        time.setValue(time.value + 1)
+      }, 1000)
+      return () => clearInterval(interval)
     }
-    time.setValue(0);
-  }, [isRecording.value, time]);
+    time.setValue(0)
+  }, [isRecording.value, time])
 
   const stopRecord = useCallback(() => {
     if (isRecording.value) {
-      isRecording.setFalse();
-      recordedTime.setValue(time.value);
-      showGraphModal.setTrue();
+      isRecording.setFalse()
+      recordedTime.setValue(time.value)
+      showGraphModal.setTrue()
     }
-  }, [isRecording, recordedTime, time.value, showGraphModal]);
+  }, [isRecording, recordedTime, time.value, showGraphModal])
 
   const onKeyboardPress = useCallback(
     (e: KeyboardEvent) => {
       if (showGraphModal.value) {
-        return;
+        return
       }
 
-      if (e.code === "Space") {
-        isSpaceButtonClick.setTrue();
-        isRecording.setTrue();
-        generateRandomInteraction();
-      } else if (e.code === "Escape" && isRecording.value) {
-        stopRecord();
+      if (e.code === 'Space') {
+        isSpaceButtonClick.setTrue()
+        isRecording.setTrue()
+        RandomUtils.resetSeed()
+        generateRandomInteraction()
+      } else if (e.code === 'Escape' && isRecording.value) {
+        stopRecord()
       }
     },
-    [
-      isSpaceButtonClick,
-      showGraphModal,
-      isRecording,
-      generateRandomInteraction,
-      stopRecord,
-    ]
-  );
+    [isSpaceButtonClick, showGraphModal, isRecording, generateRandomInteraction, stopRecord],
+  )
 
   useEffect(() => {
-    window.addEventListener("keydown", onKeyboardPress);
-    window.addEventListener("keyup", isSpaceButtonClick.setFalse);
+    window.addEventListener('keydown', onKeyboardPress)
+    window.addEventListener('keyup', isSpaceButtonClick.setFalse)
 
     return () => {
-      window.removeEventListener("keydown", onKeyboardPress);
-      window.removeEventListener("keyup", isSpaceButtonClick.setFalse);
-    };
-  }, [isSpaceButtonClick.setFalse, onKeyboardPress]);
+      window.removeEventListener('keydown', onKeyboardPress)
+      window.removeEventListener('keyup', isSpaceButtonClick.setFalse)
+    }
+  }, [isSpaceButtonClick.setFalse, onKeyboardPress])
 
-  const selectedOption = useStateful<ViewMode | null>(options[1]);
+  const selectedOption = useStateful<ViewMode | null>('mail')
 
-  const isSendEmailLoading = useBoolean(false);
+  const isSendEmailLoading = useBoolean(false)
 
   const sendDataByMail = async (data: string[]) => {
-    isSendEmailLoading.setTrue();
+    isSendEmailLoading.setTrue()
     await fetch(`${API_URL}/send-data`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         data,
-        fileName: composeName(
-          recordedTime.value,
-          selectedOption.value?.value ?? ""
-        ),
+        fileName: composeName(recordedTime.value, selectedOption.value ?? ''),
       }),
-    });
-    isSendEmailLoading.setFalse();
-  };
+    })
+    isSendEmailLoading.setFalse()
+  }
+
+  const seedData = useInput(RandomUtils.getInitSeed())
+
+  const saveSeedValue = () => {
+    RandomUtils.setInitSeed(+seedData.value)
+  }
 
   return (
     <>
       <div className="MouseMoveRecorder">
         <Navbar>
-          <If condition={isRecording.value}>
-            <Then>
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <TimerView seconds={time.value} />
-                &nbsp;
+          <Flex align="center" gap="2">
+            <If condition={isRecording.value}>
+              <Then>
+                <Text color="blue">
+                  (seed : {RandomUtils.isRandomSeed() ? 'aléatoire' : RandomUtils.getInitSeed()})
+                </Text>
+                <Flex align="center">
+                  <TimerView seconds={time.value} />
+                  &nbsp;
+                  <p className="MouseActivityTracker__instructions">
+                    Appuyez sur la touche{' '}
+                    <KeyboardButton pressed={isSpaceButtonClick.value}>Échap</KeyboardButton> de
+                    votre clavier pour areter l'enregistrement
+                  </p>
+                </Flex>
+              </Then>
+              <Else>
+                <Dialog.Root>
+                  <Dialog.Trigger>
+                    <Button>Mettre à jour le seed</Button>
+                  </Dialog.Trigger>
+                  <Dialog.Content maxWidth="450px">
+                    <Dialog.Title>Modification de la seed</Dialog.Title>
+                    <Flex direction="column" gap="3">
+                      <Text as="label" size="2">
+                        <Flex gap="2">
+                          <SwitchWiget
+                            size="2"
+                            onCheckedChange={(val) => {
+                              if (val) {
+                                RandomUtils.activeRandom()
+                              } else {
+                                RandomUtils.disabledRandom()
+                              }
+                            }}
+                            defaultChecked={RandomUtils.isRandomSeed()}
+                          />{' '}
+                          Mettre un seed aléatoire
+                        </Flex>
+                      </Text>
+                      <div>
+                        <Text as="div" size="2" mb="1" weight="bold">
+                          Seed
+                        </Text>
+                        <TextField.Root
+                          value={RandomUtils.isRandomSeed() ? '' : seedData.value}
+                          onChange={seedData.onChange}
+                          disabled={RandomUtils.isRandomSeed()}
+                          placeholder="Un entier"
+                        />
+                      </div>
+                      <Dialog.Close>
+                        <Button onClick={saveSeedValue}>Enregistrer la modifiaction</Button>
+                      </Dialog.Close>
+                    </Flex>
+                  </Dialog.Content>
+                </Dialog.Root>
                 <p className="MouseActivityTracker__instructions">
-                  Appuyez sur la touche{" "}
-                  <KeyboardButton pressed={isSpaceButtonClick.value}>
-                    Échap
-                  </KeyboardButton>{" "}
-                  de votre clavier pour arreter l'enregistrement
+                  Appuyez sur la touche{' '}
+                  <KeyboardButton pressed={isSpaceButtonClick.value}>Espace</KeyboardButton> de
+                  votre clavier pour lancer l'enregistrement
                 </p>
-              </div>
-            </Then>
-            <Else>
-              <p className="MouseActivityTracker__instructions">
-                Appuyez sur la touche{" "}
-                <KeyboardButton pressed={isSpaceButtonClick.value}>
-                  Espace
-                </KeyboardButton>{" "}
-                de votre clavier pour lancer l'enregistrement
-              </p>
-            </Else>
-          </If>
-          <Select
-            className="Select"
-            classNamePrefix="Select"
-            defaultValue={selectedOption.value}
-            onChange={selectedOption.setValue}
-            options={options}
-          />
+              </Else>
+            </If>
+            <Select.Root
+              onValueChange={(val) => selectedOption.setValue(val as ViewMode)}
+              defaultValue="mail"
+            >
+              <Select.Trigger />
+              <Select.Content>
+                <Select.Group>
+                  <Select.Item value="mail">Faux client mail</Select.Item>
+                  <Select.Item value="forms">Formes interactives</Select.Item>
+                </Select.Group>
+              </Select.Content>
+            </Select.Root>
+          </Flex>
         </Navbar>
         <CursorTrackingArea
           onSizeChange={onCursorTrackingAreaSizeChange}
@@ -298,34 +346,24 @@ export const MouseMoveRecorder: FunctionComponent = () => {
           recording={isRecording.value}
         >
           <Switch>
-            <Case condition={selectedOption.value?.value === "mail"}>
+            <Case condition={selectedOption.value === 'mail'}>
               <If condition={isRecording.value}>
                 <Then>
                   <FakeMailApp />
                 </Then>
                 <Else>
                   <div className="FakeAppPlaceHolder__area">
-                    <IconMail
-                      className="icon"
-                      color="white"
-                      strokeWidth={1}
-                      size={150}
-                    />
+                    <IconMail className="icon" color="white" strokeWidth={1} size={150} />
                   </div>
                 </Else>
               </If>
             </Case>
-            <Case condition={selectedOption.value?.value === "forms"}>
+            <Case condition={selectedOption.value === 'forms'}>
               <If condition={isRecording.value}>
                 <Then>{interactionItemView}</Then>
                 <Else>
                   <div className="FakeAppPlaceHolder__area">
-                    <IconClick
-                      className="icon"
-                      color="white"
-                      strokeWidth={1}
-                      size={150}
-                    />
+                    <IconClick className="icon" color="white" strokeWidth={1} size={150} />
                   </div>
                 </Else>
               </If>
@@ -336,8 +374,8 @@ export const MouseMoveRecorder: FunctionComponent = () => {
       <GraphModal
         open={showGraphModal.value}
         onClose={() => {
-          showGraphModal.setFalse();
-          interactions.setValue([]);
+          showGraphModal.setFalse()
+          interactions.setValue([])
         }}
         data={interactions.value}
         onDonwloadButtonClick={downloadCSV}
@@ -345,5 +383,5 @@ export const MouseMoveRecorder: FunctionComponent = () => {
         loading={isSendEmailLoading.value}
       />
     </>
-  );
-};
+  )
+}
