@@ -77,6 +77,6 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
-app.get("/version", async (_, res) => {
-  res.send("2.1.2");
-});
+app.get('/version', async (req, res) => {
+  return res.send('2.1.2')
+})
