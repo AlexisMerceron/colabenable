@@ -4,7 +4,7 @@ import { If, Then, Else } from 'react-if'
 import { useStateful, useArray, useBoolean, useInput } from 'react-hanger'
 import { IconClipboardList, IconForbid2, IconHelp, IconShare3 } from '@tabler/icons-react'
 import { Badge, Box, Button, Flex, Heading, Text, TextArea } from '@radix-ui/themes'
-import { RandomUtils } from '../../../Utils'
+import { RandomUtils } from '@utils'
 import './FakeMailApp.scss'
 
 interface FakeEmail {

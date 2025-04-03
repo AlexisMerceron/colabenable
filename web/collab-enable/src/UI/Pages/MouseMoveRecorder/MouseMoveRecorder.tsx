@@ -1,11 +1,7 @@
 import './MouseMoveRecorder.scss'
 
-import {} from '@components/CursorTrackingArea/CursorTrackingArea'
-import {} from '@tabler/icons-react'
-import {} from '@utils/TimeUtils'
-import { FunctionComponent, useCallback, useEffect, useMemo } from 'react'
-
 import {
+  FakeMailApp,
   CursorAction,
   CursorTrackingArea,
   DoubleClickItem,
@@ -15,11 +11,14 @@ import {
   LeftClickItem,
   RightClickItem,
   TimerView,
-  FakeMailApp,
-} from '../../Components'
+} from '@components'
+import {} from '@tabler/icons-react'
+import { TimeUtils } from '@utils/TimeUtils'
+import { RandomUtils } from '@utils'
+import { FunctionComponent, useCallback, useEffect, useMemo } from 'react'
+
 import { useBoolean, useInput, useStateful } from 'react-hanger'
 import { Case, Else, If, Switch, Then } from 'react-if'
-import { RandomUtils, TimeUtils } from '../../../Utils'
 import { IconClick, IconMail } from '@tabler/icons-react'
 import {
   Button,
