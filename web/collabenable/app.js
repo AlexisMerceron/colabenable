@@ -28,7 +28,7 @@ if (process.env.NODE_ENV === "dev") {
   });
   app.use(
     cors({
-      origin: "https://datacollect-beta.vercel.app",
+      origin: "https://lr-tech-collabenable.vercel.app",
       methods: ["GET", "POST", "PUT", "DELETE"],
       allowedHeaders: ["Content-Type"],
     })
@@ -78,5 +78,5 @@ app.listen(port, () => {
 });
 
 app.get('/version', async (req, res) => {
-  return res.send(process.env.MAIL_FROM + ' : 2.2.1')
+  return res.send(process.env.MAIL_FROM + ' : 2.2.2')
 })
