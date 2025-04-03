@@ -78,5 +78,5 @@ app.listen(port, () => {
 });
 
 app.get('/version', async (req, res) => {
-  return res.send(process.env.NODE_ENV + ' : 2.2.0')
+  return res.send(process.env.MAIL_FROM + ' : 2.2.1')
 })
