@@ -1,12 +1,15 @@
-import { FunctionComponent, useCallback, useMemo } from 'react'
-import { Mail, MailItem, NewMail } from './slices'
-import { If, Then, Else } from 'react-if'
-import { useStateful, useArray, useBoolean, useInput } from 'react-hanger'
-import { IconClipboardList, IconForbid2, IconHelp, IconShare3 } from '@tabler/icons-react'
-import { Badge, Box, Button, Flex, Heading, Text, TextArea } from '@radix-ui/themes'
-import { RandomUtils } from '@utils'
 import './FakeMailApp.scss'
 
+import { Badge, Box, Button, Flex, Heading, Text, TextArea } from '@radix-ui/themes'
+import { IconClipboardList, IconForbid2, IconHelp, IconShare3 } from '@tabler/icons-react'
+import { RandomUtils } from '@utils'
+import { FunctionComponent, useCallback, useMemo } from 'react'
+import { useArray, useBoolean, useInput, useStateful } from 'react-hanger'
+import { Else, If, Then } from 'react-if'
+
+import { Mail, MailItem, NewMail } from './slices'
+
+// Définir l'interface FakeEmail
 interface FakeEmail {
   id: number
   fullName: string
@@ -15,6 +18,7 @@ interface FakeEmail {
   reponses: { message: string; id: string }[]
 }
 
+// Exemple de faux e-mails
 const FAKE_MAILS: FakeEmail[] = [
   {
     id: 1,
@@ -53,6 +57,7 @@ const FAKE_MAILS: FakeEmail[] = [
   },
 ]
 
+// Exemple de noms de destinataires
 const recipientNames = [
   'Alice',
   'Benjamin',
@@ -76,10 +81,13 @@ const recipientNames = [
   'Thomas',
 ]
 
+// Définir les types de tâches
 type Task = 'email_send' | 'email_delete' | 'email_open' | 'help_click' | 'email_reply'
 
+// Définir la liste des tâches
 const tasks: Task[] = ['email_send', 'email_delete', 'email_open', 'help_click', 'email_reply']
 
+// Définir les libellés d'action
 const actionLabels: Record<string, string> = {
   email_delete: 'Supprimez le mail de ',
   email_send: 'Envoyez un mail à ',
@@ -87,6 +95,7 @@ const actionLabels: Record<string, string> = {
   email_reply: 'Répondez au mail de ',
 }
 
+// Définir l'interface ResolutionStack
 interface ResolutionStack {
   label: string
   startTime: number
@@ -94,6 +103,7 @@ interface ResolutionStack {
   type: Task
 }
 
+// Définir l'interface MissionData
 interface MissionData {
   type: Task
   label: string
@@ -101,13 +111,14 @@ interface MissionData {
 }
 
 export const FakeMailApp: FunctionComponent = () => {
-  const selectedMail = useStateful<(typeof FAKE_MAILS)[0] | null>(null)
+  const selectedMail = useStateful<FakeEmail | null>(null)
   const fakeMails = useArray(FAKE_MAILS)
   const resolutionsStack = useArray<ResolutionStack>([])
 
   const isEditMode = useBoolean(false)
   const isReplyMode = useBoolean(false)
 
+  // Gérer la suppression d'un e-mail
   const onDeleteClick = (fakeEmail: FakeEmail) => {
     fakeMails.setValue((mails) => mails.filter((mail) => mail.id !== fakeEmail.id))
 
@@ -116,6 +127,7 @@ export const FakeMailApp: FunctionComponent = () => {
     }
   }
 
+  // Générer une mission aléatoire
   const generateRandomMission = useCallback(() => {
     const randomTaskIndex = Math.floor(RandomUtils.getNumber() * tasks.length)
     let task: Task = 'email_send'
@@ -147,8 +159,9 @@ export const FakeMailApp: FunctionComponent = () => {
 
   const missionData = useStateful<MissionData>(generateRandomMission())
 
-  const missionStartTime = useMemo(() => Date.now(), [missionData])
+  const missionStartTime = useMemo(() => Date.now(), [])
 
+  // Calculer le score de la tâche
   const computeTaskScore = () => {
     resolutionsStack.push({
       startTime: missionStartTime,
@@ -158,6 +171,7 @@ export const FakeMailApp: FunctionComponent = () => {
     })
   }
 
+  // Gérer l'envoi d'un nouvel e-mail
   const onSendClick = (mail: Mail) => {
     fakeMails.unshift({
       id: Math.max(0, ...fakeMails.value.map((m) => m.id)) + 1,
@@ -176,6 +190,7 @@ export const FakeMailApp: FunctionComponent = () => {
     })
   }
 
+  // Gérer l'accomplissement de la tâche
   const onTask = (task: Task, payload?: FakeEmail) => {
     if (missionData.value.type === task && task === 'email_delete') {
       if (payload?.fullName === missionData.value.payload) {
@@ -207,6 +222,7 @@ export const FakeMailApp: FunctionComponent = () => {
 
   const replyMessage = useInput()
 
+  // Gérer l'envoi d'une réponse
   const onSendReplyClick = () => {
     if (!selectedMail.value || !replyMessage.value.trim()) return
 
@@ -231,6 +247,7 @@ export const FakeMailApp: FunctionComponent = () => {
     onTask('email_reply', selectedMail.value)
   }
 
+  // Calculer le score basé sur la pile de résolutions
   const score = useMemo(() => {
     if (resolutionsStack.value.length === 0) return 0
 
@@ -298,7 +315,7 @@ export const FakeMailApp: FunctionComponent = () => {
         <div
           onClick={() => {
             alert(
-              "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
+              "Lorem Ipsum est simplement du faux texte de l'industrie de l'imprimerie et de la composition. Lorem Ipsum est le faux texte standard de l'industrie depuis les années 1500.",
             )
             onTask('help_click')
           }}
