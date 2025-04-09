@@ -63,7 +63,7 @@ const recipientNames = [
   'Benjamin',
   'Chloé',
   'David',
-  'Émilie',
+  'Emilie',
   'Florian',
   'Gabriel',
   'Hélène',
@@ -192,114 +192,59 @@ export const FakeMailApp: FunctionComponent = () => {
 
   // Gérer l'accomplissement de la tâche
   const onTask = (task: Task, payload?: FakeEmail) => {
-    if (missionData.value.type === task && task === 'email_delete') {
-      if (payload?.fullName === missionData.value.payload) {
-        missionData.setValue(generateRandomMission())
-        computeTaskScore()
-      }
-    } else if (missionData.value.type === task && task === 'email_reply') {
-      if (payload?.fullName === missionData.value.payload) {
-        missionData.setValue(generateRandomMission())
-        computeTaskScore()
-      }
-    } else if (missionData.value.type === task && task === 'email_send') {
-      if (
-        payload?.fullName?.toLocaleLowerCase() === missionData.value.payload?.toLocaleLowerCase()
-      ) {
-        missionData.setValue(generateRandomMission())
-        computeTaskScore()
-      }
-    } else if (missionData.value.type === task && task === 'email_open') {
-      if (payload?.fullName === missionData.value.payload) {
-        missionData.setValue(generateRandomMission())
-        computeTaskScore()
-      }
-    } else if (missionData.value.type === task && task === 'help_click') {
-      missionData.setValue(generateRandomMission())
-      computeTaskScore()
+    if (missionData.value.type === task && (task === 'help_click' || payload?.fullName?.toLocaleLowerCase() === missionData.value.payload?.toLocaleLowerCase())) {
+      missionData.setValue(generateRandomMission());
+      computeTaskScore();
     }
-  }
+  };
 
   const replyMessage = useInput()
 
   // Gérer l'envoi d'une réponse
   const onSendReplyClick = () => {
-    if (!selectedMail.value || !replyMessage.value.trim()) return
-
-    const updatedMails = fakeMails.value.map((mail) =>
+    if (!selectedMail.value || !replyMessage.value.trim()) return;
+  
+    const updatedMails = fakeMails.value.map(mail =>
       mail.id === selectedMail.value?.id
-        ? {
-            ...mail,
-            reponses: [...mail.reponses, { message: replyMessage.value, id: String(Date.now()) }],
-          }
-        : mail,
-    )
-
-    fakeMails.setValue(updatedMails)
-
-    const newSelectedMessage = updatedMails.find((mail) => mail.id === selectedMail.value?.id)
-    if (newSelectedMessage) {
-      selectedMail.setValue(newSelectedMessage)
-    }
-
-    replyMessage.setValue('')
-    isReplyMode.setFalse()
-    onTask('email_reply', selectedMail.value)
-  }
+        ? { ...mail, reponses: [...mail.reponses, { message: replyMessage.value, id: String(Date.now()) }] }
+        : mail
+    );
+  
+    fakeMails.setValue(updatedMails);
+    selectedMail.setValue(updatedMails.find(mail => mail.id === selectedMail.value?.id) || null);
+    replyMessage.setValue('');
+    isReplyMode.setFalse();
+    onTask('email_reply', selectedMail.value);
+  };
 
   // Calculer le score basé sur la pile de résolutions
   const score = useMemo(() => {
-    if (resolutionsStack.value.length === 0) return 0
-
-    let rawScore = 0
-    const totalTasks = resolutionsStack.value.length
-    const maxTheoreticalScore = totalTasks
-
-    for (const resolution of resolutionsStack.value) {
-      const durationInSeconds = (resolution.endTime - resolution.startTime) / 1000
-
-      let taskScore = 1
-
-      switch (resolution.type) {
-        case 'email_send':
-          if (durationInSeconds > 20) {
-            const excess = durationInSeconds - 20
-            taskScore = Math.max(0, 1 - excess * 0.05)
-          }
-          break
-        case 'email_delete':
-          if (durationInSeconds > 10) {
-            const excess = durationInSeconds - 10
-            taskScore = Math.max(0, 1 - excess * 0.2)
-          }
-          break
-        case 'email_open':
-          if (durationInSeconds > 5) {
-            const excess = durationInSeconds - 5
-            taskScore = Math.max(0, 1 - excess * 0.2)
-          }
-          break
-        case 'help_click':
-          if (durationInSeconds > 5) {
-            const excess = durationInSeconds - 5
-            taskScore = Math.max(0, 1 - excess * 0.25)
-          }
-          break
-        case 'email_reply':
-          if (durationInSeconds > 15) {
-            const excess = durationInSeconds - 15
-            taskScore = Math.max(0, 1 - excess * 0.067)
-          }
-          break
+    if (!resolutionsStack.value.length) return 0;
+  
+    const penaltyMap: Record<string, { limit: number; factor: number }> = {
+      email_send: { limit: 20, factor: 0.05 },
+      email_delete: { limit: 10, factor: 0.2 },
+      email_open: { limit: 5, factor: 0.2 },
+      help_click: { limit: 5, factor: 0.25 },
+      email_reply: { limit: 15, factor: 0.067 },
+    };
+  
+    const rawScore = resolutionsStack.value.reduce((acc, resolution) => {
+      const durationInSeconds = (resolution.endTime - resolution.startTime) / 1000;
+      const penalty = penaltyMap[resolution.type];
+  
+      if (penalty) {
+        const excess = Math.max(0, durationInSeconds - penalty.limit);
+        const taskScore = Math.max(0, 1 - excess * penalty.factor);
+        return acc + taskScore;
       }
-
-      rawScore += taskScore
-    }
-
-    const normalizedScore = (rawScore / maxTheoreticalScore) * 20
-
-    return Math.round(Math.min(Math.max(normalizedScore, 0), 20))
-  }, [resolutionsStack.value])
+  
+      return acc + 1;
+    }, 0);
+  
+    const normalizedScore = (rawScore / resolutionsStack.value.length) * 20;
+    return Math.round(Math.min(Math.max(normalizedScore, 0), 20));
+  }, [resolutionsStack.value]);
 
   return (
     <div className="FakeMailApp">
@@ -309,7 +254,7 @@ export const FakeMailApp: FunctionComponent = () => {
             <IconClipboardList size={16} />
             {missionData.value.label}
           </Badge>
-          <Badge color="gray">{score}/20</Badge>
+          <Badge color="gray">Note glogale de rapidité : {score}/20</Badge>
         </Flex>
 
         <div

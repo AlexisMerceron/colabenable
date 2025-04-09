@@ -317,9 +317,11 @@ export const MouseMoveRecorder: FunctionComponent = () => {
                   <TimerView seconds={time.value} />
                   &nbsp;
                   <p className="MouseActivityTracker__instructions">
-                    Appuyez sur la touche{' '}
-                    <KeyboardButton pressed={isSpaceButtonClick.value}>Échap</KeyboardButton> de
-                    votre clavier pour arrêter l'enregistrement
+                    Appuyez sur la touche 
+                  </p>
+                  <KeyboardButton pressed={isSpaceButtonClick.value}>Échap</KeyboardButton> 
+                  <p>
+                     de votre clavier pour arrêter l'enregistrement
                   </p>
                 </Flex>
               </Then>
@@ -366,8 +368,10 @@ export const MouseMoveRecorder: FunctionComponent = () => {
                 </Dialog.Root>
                 <p className="MouseActivityTracker__instructions">
                   Appuyez sur la touche{' '}
-                  <KeyboardButton pressed={isSpaceButtonClick.value}>Espace</KeyboardButton> de
-                  votre clavier pour lancer l'enregistrement
+                </p>
+                <KeyboardButton pressed={isSpaceButtonClick.value}>Espace</KeyboardButton> 
+                <p className="MouseActivityTracker__instructions">
+                  de votre clavier pour lancer l'enregistrement
                 </p>
               </Else>
             </If>
