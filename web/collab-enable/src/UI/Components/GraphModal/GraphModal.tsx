@@ -85,7 +85,8 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
                   data &&
                   onSendByEmailButtonClick?.([
                     'time,x,y,action',
-                    ...(data.map((item) => `${item.time},${item.x},${item.y},${item.action}`) ?? []),
+                    ...(data.map((item) => `${item.time},${item.x},${item.y},${item.action}`) ??
+                      []),
                   ])
                 }
                 color="yellow"
@@ -108,6 +109,7 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
                 ...option,
                 series: [
                   {
+                    name: 'Drag',
                     type: 'scatter',
                     symbolSize: 10,
                     data: dragEvents,
@@ -117,13 +119,14 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
                   },
                   {
                     type: 'line',
-                    symbolSize: 4,
+                    symbolSize: 0,
                     data: allEvents,
                     itemStyle: {
-                      color: 'white',
+                      color: '#FFFFFF80',
                     },
                   },
                   {
+                    name: 'Clic gauche',
                     type: 'effectScatter',
                     symbolSize: 12,
                     data: clickEvents,
@@ -132,6 +135,7 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
                     },
                   },
                   {
+                    name: 'Double clic',
                     type: 'effectScatter',
                     symbolSize: 12,
                     data: doubleClickEvents,
@@ -140,6 +144,7 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
                     },
                   },
                   {
+                    name: 'Clic droit',
                     type: 'effectScatter',
                     symbolSize: 12,
                     data: rightClickEvents,
@@ -207,5 +212,12 @@ const option = {
         type: 'dashed',
       },
     },
+  },
+  legend: {
+    data: ['Drag', 'Mouvement', 'Clic gauche', 'Double clic', 'Clic droit'],
+    textStyle: {
+      color: '#FFFFFF',
+    },
+    top: '10px',
   },
 }
