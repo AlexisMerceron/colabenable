@@ -304,16 +304,14 @@ export const MouseMoveRecorder: FunctionComponent = () => {
                 <Text color="blue">
                   (seed : {RandomUtils.isRandomSeed() ? 'aléatoire' : RandomUtils.getInitSeed()})
                 </Text>
-                <Flex align="center">
+                <Flex align="center" gap="1">
                   <TimerView seconds={time.value} />
                   &nbsp;
-                  <p className="MouseActivityTracker__instructions">
-                    Appuyez sur la touche 
-                  </p>
-                  <KeyboardButton pressed={isSpaceButtonClick.value}>Échap</KeyboardButton> 
-                  <p>
-                     de votre clavier pour arrêter l'enregistrement
-                  </p>
+                  <Text className="MouseActivityTracker__instructions">Appuyez sur la touche</Text>
+                  <KeyboardButton pressed={isSpaceButtonClick.value}>Échap</KeyboardButton>
+                  <Text className="MouseActivityTracker__instructions">
+                    de votre clavier pour arrêter l'enregistrement
+                  </Text>
                 </Flex>
               </Then>
               <Else>
@@ -357,13 +355,13 @@ export const MouseMoveRecorder: FunctionComponent = () => {
                     </Flex>
                   </Dialog.Content>
                 </Dialog.Root>
-                <p className="MouseActivityTracker__instructions">
-                  Appuyez sur la touche{' '}
-                </p>
-                <KeyboardButton pressed={isSpaceButtonClick.value}>Espace</KeyboardButton> 
-                <p className="MouseActivityTracker__instructions">
-                  de votre clavier pour lancer l'enregistrement
-                </p>
+                <Flex gap="1" align="center">
+                  <Text className="MouseActivityTracker__instructions">Appuyez sur la touche </Text>
+                  <KeyboardButton pressed={isSpaceButtonClick.value}>Espace</KeyboardButton>
+                  <Text className="MouseActivityTracker__instructions">
+                    de votre clavier pour lancer l'enregistrement
+                  </Text>
+                </Flex>
               </Else>
             </If>
             <If condition={!isRecording.value}>
