@@ -1,66 +1,71 @@
-import "./MouseMoveRecorder.scss";
+import './MouseMoveRecorder.scss'
 
-import { ClickItem } from "@components/ClickItem/ClickItem";
+import { ClickItem } from '@components/ClickItem/ClickItem'
+import { CursorAction, CursorTrackingArea } from '@components/CursorTrackingArea/CursorTrackingArea'
+import { FakeMailApp } from '@components/FakeMailApp/FakeMailApp'
+import { GraphModal } from '@components/GraphModal/GraphModal'
+import { KeyboardButton } from '@components/KeyboardButton/KeyboardButton'
+import { Navbar } from '@components/Navbar/Navbar'
+import { TimerView } from '@components/TimerView/TimerView'
 import {
-  CursorAction,
-  CursorTrackingArea,
-} from "@components/CursorTrackingArea/CursorTrackingArea";
-import { FakeMailApp } from "@components/FakeMailApp/FakeMailApp";
-import { GraphModal } from "@components/GraphModal/GraphModal";
-import { KeyboardButton } from "@components/KeyboardButton/KeyboardButton";
-import { Navbar } from "@components/Navbar/Navbar";
-import { TimerView } from "@components/TimerView/TimerView";
-import { Button, Dialog, Flex, Select, Switch as SwitchWiget, Text, TextField} from '@radix-ui/themes'
-import { IconClick, IconMail } from "@tabler/icons-react";
-import { RandomUtils } from '@utils'
-import { TimeUtils } from "@utils/TimeUtils";
-import { FunctionComponent, useCallback, useEffect, useMemo } from "react";
+  Button,
+  Dialog,
+  Flex,
+  Select,
+  Switch as SwitchWiget,
+  Text,
+  TextField,
+} from '@radix-ui/themes'
+import { IconClick, IconMail } from '@tabler/icons-react'
+import { RandomUtils } from '@utils/RandomUtils'
+import { TimeUtils } from '@utils/TimeUtils'
+import { FunctionComponent, useCallback, useEffect, useMemo } from 'react'
 import { useBoolean, useInput, useStateful } from 'react-hanger'
-import { Case, Else, If, Switch, Then } from "react-if";
+import { Case, Else, If, Switch, Then } from 'react-if'
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL
 
-const ITEM_WIDTH = 50;
-const ITEM_HEIGHT = 50;
+const ITEM_WIDTH = 50
+const ITEM_HEIGHT = 50
 
 interface ViewMode {
-  value: "forms" | "mail";
-  label: string;
+  value: 'forms' | 'mail'
+  label: string
 }
 
 const options: ViewMode[] = [
-  { value: "forms", label: "Formes interactives" },
-  { value: "mail", label: "Faux client mail" },
-];
+  { value: 'forms', label: 'Formes interactives' },
+  { value: 'mail', label: 'Faux client mail' },
+]
 
 enum InteractionType {
-  LEFT_CLICK = "LEFT_CLICK",
-  DOUBLE_CLICK = "DOUBLE_CLICK",
-  RIGHT_CLICK = "RIGHT_CLICK",
-  DRAG = "DRAG",
+  LEFT_CLICK = 'LEFT_CLICK',
+  DOUBLE_CLICK = 'DOUBLE_CLICK',
+  RIGHT_CLICK = 'RIGHT_CLICK',
+  DRAG = 'DRAG',
 }
 
 interface InteractionData {
-  x: number;
-  y: number;
-  type: InteractionType;
-  xEnd?: number;
-  yEnd?: number;
+  x: number
+  y: number
+  type: InteractionType
+  xEnd?: number
+  yEnd?: number
 }
 
 // Générer un type d'interaction aléatoire
 const getRandomInteractionType = (): InteractionType => {
-  const values = Object.values(InteractionType);
-  const randomIndex = Math.floor(Math.random() * values.length);
-  return values[randomIndex];
-};
+  const values = Object.values(InteractionType)
+  const randomIndex = Math.floor(RandomUtils.getNumber() * values.length)
+  return values[randomIndex]
+}
 
 // Générer une position aléatoire dans les limites données
 const getRandomPosition = (maxX: number, maxY: number) => {
-  const x = Math.floor(Math.random() * (maxX - ITEM_WIDTH));
-  const y = Math.floor(Math.random() * (maxY - ITEM_HEIGHT));
-  return { x, y };
-};
+  const x = Math.floor(RandomUtils.getNumber() * (maxX - ITEM_WIDTH))
+  const y = Math.floor(RandomUtils.getNumber() * (maxY - ITEM_HEIGHT))
+  return { x, y }
+}
 
 // Composer un nom de fichier basé sur l'heure actuelle, les secondes formatées et le mode de l'application
 const composeName = (seconds: number, appMode: string) => {
@@ -77,55 +82,53 @@ export const MouseMoveRecorder: FunctionComponent = () => {
     x: 10,
     y: 300,
     type: InteractionType.LEFT_CLICK,
-  });
+  })
 
   // État pour la taille de la zone de suivi du curseur
-  const cursorTrackingAreaSize = useStateful<
-    { w: number; h: number } | undefined
-  >(undefined);
+  const cursorTrackingAreaSize = useStateful<{ w: number; h: number } | undefined>(undefined)
 
   // États booléens pour divers éléments de l'interface utilisateur
-  const showGraphModal = useBoolean(false);
-  const isSpaceButtonClick = useBoolean(false);
-  const isRecording = useBoolean(false);
+  const showGraphModal = useBoolean(false)
+  const isSpaceButtonClick = useBoolean(false)
+  const isRecording = useBoolean(false)
 
   // États pour le suivi du temps
-  const time = useStateful(0);
-  const recordedTime = useStateful(0);
+  const time = useStateful(0)
+  const recordedTime = useStateful(0)
 
   // Gérer le changement de taille de la zone de suivi du curseur
   const onCursorTrackingAreaSizeChange = (w: number, h: number) => {
-    cursorTrackingAreaSize.setValue({ w, h });
-  };
+    cursorTrackingAreaSize.setValue({ w, h })
+  }
 
   // Générer une interaction aléatoire
   const generateRandomInteraction = useCallback(() => {
     const { x, y } = getRandomPosition(
       cursorTrackingAreaSize.value?.w ?? 0,
-      cursorTrackingAreaSize.value?.h ?? 0
-    );
-    const interactionType = getRandomInteractionType();
+      cursorTrackingAreaSize.value?.h ?? 0,
+    )
+    const interactionType = getRandomInteractionType()
 
     if (interactionType === InteractionType.DRAG) {
       const { x: xEnd, y: yEnd } = getRandomPosition(
         cursorTrackingAreaSize.value?.w ?? 0,
-        cursorTrackingAreaSize.value?.h ?? 0
-      );
+        cursorTrackingAreaSize.value?.h ?? 0,
+      )
       currentInteraction.setValue({
         x,
         y,
         type: InteractionType.DRAG,
         xEnd,
         yEnd,
-      });
+      })
     } else {
       currentInteraction.setValue({
         x,
         y,
         type: interactionType,
-      });
+      })
     }
-  }, [currentInteraction, cursorTrackingAreaSize.value]);
+  }, [currentInteraction, cursorTrackingAreaSize.value])
 
   // Déterminer la vue de l'élément d'interaction en fonction du type d'interaction actuel
   const interactionItemView = useMemo(() => {
@@ -139,7 +142,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
             onResolve={generateRandomInteraction}
             type="left"
           />
-        );
+        )
       case InteractionType.DOUBLE_CLICK:
         return (
           <ClickItem
@@ -149,7 +152,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
             onResolve={generateRandomInteraction}
             type="double"
           />
-        );
+        )
       case InteractionType.RIGHT_CLICK:
         return (
           <ClickItem
@@ -159,9 +162,12 @@ export const MouseMoveRecorder: FunctionComponent = () => {
             onResolve={generateRandomInteraction}
             type="right"
           />
-        );
+        )
       case InteractionType.DRAG:
-        if (currentInteraction.value?.xEnd !== undefined && currentInteraction.value?.yEnd !== undefined) { 
+        if (
+          currentInteraction.value?.xEnd !== undefined &&
+          currentInteraction.value?.yEnd !== undefined
+        ) {
           return (
             <>
               <ClickItem
@@ -178,124 +184,109 @@ export const MouseMoveRecorder: FunctionComponent = () => {
                 type="dragStart"
               />
             </>
-          );
+          )
         }
-        return null;
+        return null
       default:
-        return null;
+        return null
     }
   }, [currentInteraction.value, generateRandomInteraction])
 
-  const debug = useStateful("");
+  const debug = useStateful('')
 
   const onEvent = (x: number, y: number, action: CursorAction) => {
-    debug.setValue(`${Date.now()},${x},${y},${action}`);
+    debug.setValue(`${Date.now()},${x},${y},${action}`)
     if (isRecording.value) {
-      interactions.setValue([
-        ...interactions.value,
-        { time: Date.now(), x, y, action },
-      ]);
+      interactions.setValue([...interactions.value, { time: Date.now(), x, y, action }])
     }
-  };
+  }
 
-  const interactions = useStateful<
-    { time: number; x: number; y: number; action: CursorAction }[]
-  >([]);
+  const interactions = useStateful<{ time: number; x: number; y: number; action: CursorAction }[]>(
+    [],
+  )
 
   const downloadCSV = () => {
-    const headers = "time,x,y,action\n";
+    const headers = 'time,x,y,action\n'
     const rows = interactions.value
       .map(({ time, x, y, action }) => `${time},${x},${y},${action}`)
-      .join("\n");
-    const csvContent = headers + rows;
+      .join('\n')
+    const csvContent = headers + rows
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = composeName(
-      recordedTime.value,
-      selectedOption.value?.value ?? ""
-    );
-    a.click();
+    const a = document.createElement('a')
+    a.href = url
+    a.download = composeName(recordedTime.value, selectedOption.value?.value ?? '')
+    a.click()
 
-    URL.revokeObjectURL(url);
-  };
+    URL.revokeObjectURL(url)
+  }
 
   useEffect(() => {
     if (isRecording.value) {
       const interval = setInterval(() => {
-        time.setValue(time.value + 1);
-      }, 1000);
-      return () => clearInterval(interval);
+        time.setValue(time.value + 1)
+      }, 1000)
+      return () => clearInterval(interval)
     }
-    time.setValue(0);
-  }, [isRecording.value, time]);
+    time.setValue(0)
+  }, [isRecording.value, time])
 
   const stopRecord = useCallback(() => {
     if (isRecording.value) {
-      isRecording.setFalse();
-      recordedTime.setValue(time.value);
-      showGraphModal.setTrue();
+      isRecording.setFalse()
+      recordedTime.setValue(time.value)
+      showGraphModal.setTrue()
     }
-  }, [isRecording, recordedTime, time.value, showGraphModal]);
+  }, [isRecording, recordedTime, time.value, showGraphModal])
 
   const onKeyboardPress = useCallback(
     (e: KeyboardEvent) => {
       if (showGraphModal.value) {
-        return;
+        return
       }
 
-      if (e.code === "Space") {
-        isSpaceButtonClick.setTrue();
-        isRecording.setTrue();
+      if (e.code === 'Space') {
+        isSpaceButtonClick.setTrue()
+        isRecording.setTrue()
         RandomUtils.resetSeed()
-        generateRandomInteraction();
-      } else if (e.code === "Escape" && isRecording.value) {
-        stopRecord();
+        generateRandomInteraction()
+      } else if (e.code === 'Escape' && isRecording.value) {
+        stopRecord()
       }
     },
-    [
-      isSpaceButtonClick,
-      showGraphModal,
-      isRecording,
-      generateRandomInteraction,
-      stopRecord,
-    ]
-  );
+    [isSpaceButtonClick, showGraphModal, isRecording, generateRandomInteraction, stopRecord],
+  )
 
   useEffect(() => {
-    window.addEventListener("keydown", onKeyboardPress);
-    window.addEventListener("keyup", isSpaceButtonClick.setFalse);
+    window.addEventListener('keydown', onKeyboardPress)
+    window.addEventListener('keyup', isSpaceButtonClick.setFalse)
 
     return () => {
-      window.removeEventListener("keydown", onKeyboardPress);
-      window.removeEventListener("keyup", isSpaceButtonClick.setFalse);
-    };
-  }, [isSpaceButtonClick.setFalse, onKeyboardPress]);
+      window.removeEventListener('keydown', onKeyboardPress)
+      window.removeEventListener('keyup', isSpaceButtonClick.setFalse)
+    }
+  }, [isSpaceButtonClick.setFalse, onKeyboardPress])
 
-  const selectedOption = useStateful<ViewMode | null>(options[1]);
+  const selectedOption = useStateful<ViewMode | null>(options[1])
 
-  const isSendEmailLoading = useBoolean(false);
+  const isSendEmailLoading = useBoolean(false)
 
   const sendDataByMail = async (data: string[]) => {
-    isSendEmailLoading.setTrue();
+    isSendEmailLoading.setTrue()
     await fetch(`${API_URL}/send-data`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         data,
-        fileName: composeName(
-          recordedTime.value,
-          selectedOption.value?.value ?? ""
-        ),
+        fileName: composeName(recordedTime.value, selectedOption.value?.value ?? ''),
       }),
-    });
-    isSendEmailLoading.setFalse();
-  };
+    })
+    isSendEmailLoading.setFalse()
+  }
 
   const seedData = useInput(RandomUtils.getInitSeed())
 
@@ -371,18 +362,24 @@ export const MouseMoveRecorder: FunctionComponent = () => {
                 </p>
               </Else>
             </If>
-            <Select.Root
-              onValueChange={(val) => selectedOption.setValue(options.find(option => option.value === val) || null)}
-              defaultValue="mail"
-            >
-              <Select.Trigger />
-              <Select.Content>
-                <Select.Group>
-                  <Select.Item value="mail">Faux client mail</Select.Item>
-                  <Select.Item value="forms">Formes interactives</Select.Item>
-                </Select.Group>
-              </Select.Content>
-            </Select.Root>
+            <If condition={!isRecording.value}>
+              <Then>
+                <Select.Root
+                  onValueChange={(val) =>
+                    selectedOption.setValue(options.find((option) => option.value === val) || null)
+                  }
+                  defaultValue={selectedOption.value?.value}
+                >
+                  <Select.Trigger />
+                  <Select.Content>
+                    <Select.Group>
+                      <Select.Item value="mail">Faux client mail</Select.Item>
+                      <Select.Item value="forms">Formes interactives</Select.Item>
+                    </Select.Group>
+                  </Select.Content>
+                </Select.Root>
+              </Then>
+            </If>
           </Flex>
         </Navbar>
         <CursorTrackingArea
@@ -423,7 +420,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
           interactions.setValue([])
         }}
         data={interactions.value}
-        onDonwloadButtonClick={downloadCSV}
+        onDownloadButtonClick={downloadCSV}
         onSendByEmailButtonClick={sendDataByMail}
         loading={isSendEmailLoading.value}
       />

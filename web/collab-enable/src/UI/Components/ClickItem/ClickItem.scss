@@ -53,10 +53,11 @@
   position: absolute;
   width: 50px;
   height: 50px;
-  background-color: rgba(158, 134, 0, 0.626);
-  border: 4px solid rgba(158, 134, 0, 0.626);
+  padding: 8px;
+  background-color: greenyellow;
+  border: 4px solid rgba(255, 68, 47, 0.239);
   box-sizing: border-box;
-  cursor: pointer;
+  cursor: grab;
 
   display: flex;
   align-items: center;
@@ -64,16 +65,20 @@
   font-weight: 700;
   font-size: 14px;
   user-select: none;
+
+  animation: shaking 0.15s infinite;
 }
 
 .DragEndClickItem {
   position: absolute;
   width: 50px;
   height: 50px;
-  background-color: rgba(255, 255, 255, 0.626);
-  border: 4px solid rgba(255, 255, 255, 0.626);
+  padding: 8px;
+  background-color: rgba(255, 255, 255, 0.356);
+  border: 4px solid rgba(255, 255, 255, 0.613);
   box-sizing: border-box;
-  cursor: pointer;
+  cursor: no-drop;
+  color: rgba(255, 255, 255, 0.658);
 
   display: flex;
   align-items: center;
@@ -83,7 +88,33 @@
   user-select: none;
 }
 
+.DragEndClickItem.drag-over {
+  border: 4px dashed rgb(47, 241, 255);
+  color: rgb(47, 241, 255);
+  animation: swallow 0.15s forwards;
+}
+
 .hide {
   transition: 0.01s;
-  transform: translateX(-9999px);
+  opacity: 0;
+}
+
+@keyframes shaking {
+  0% { transform: rotate(0deg); }
+  25% { transform:  rotate(2deg); }
+  50% { transform:  rotate(0eg); }
+  75% { transform:  rotate(-2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes swallow {
+  0% {
+    transform: scale(1);
+  }
+  80% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1.2);
+  }
 }

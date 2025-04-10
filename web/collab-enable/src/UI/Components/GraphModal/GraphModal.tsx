@@ -111,7 +111,8 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
                   {
                     name: 'Drag',
                     type: 'scatter',
-                    symbolSize: 10,
+                    symbol: 'square',
+                    symbolSize: 8,
                     data: dragEvents,
                     itemStyle: {
                       color: '#79eb71',
