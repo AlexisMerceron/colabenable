@@ -10,5 +10,5 @@ interface KeyboardButtonProps extends PropsWithChildren {
 
 // Composant fonctionnel pour afficher un bouton de clavier
 export const KeyboardButton: FunctionComponent<KeyboardButtonProps> = ({ pressed, children }) => {
-  return <div className={clsx('KeyboardButton', { pressed })}>{children}</div>
+  return <p className={clsx('KeyboardButton', { pressed })}>{children}</p>
 }
