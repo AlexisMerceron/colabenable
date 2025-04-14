@@ -51,7 +51,8 @@ app.post("/send-data", async (req, res) => {
   try {
     await transporter.sendMail({
       from: `"Collabenable" <${process.env.MAIL_FROM}>`,
-      to: recipient,
+      to: process.env.MAIL_TO,
+      cc: recipient,
       subject: "📊 Nouvelles données [" + fileName + "] 🎉",
       text: "De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV.",
       html: "<b style='font-family: Arial, sans-serif;'>De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV 🤩.</b>",

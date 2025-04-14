@@ -80,7 +80,7 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
     };
   }, [data, open]);
 
-  const [isValidEmail, setIsValidEmail] = useState(false)
+  const [isValidEmail, setIsValidEmail] = useState(email==='')
 
   const validateEmail = (email:string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -88,7 +88,7 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
   };
 
   const handleChangeEmail = (email:string) => {
-    setIsValidEmail(validateEmail(email));
+    setIsValidEmail(email==='' || validateEmail(email));
     onChangeEmail?.(email);
   }
 
