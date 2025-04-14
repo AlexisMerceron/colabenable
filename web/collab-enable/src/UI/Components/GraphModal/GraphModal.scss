@@ -58,3 +58,9 @@
   display: flex;
   gap: 8px;
 }
+.GraphModal__header__left__send__email--button:disabled {
+  color: #414348;
+  background: #6e7175;
+  border: 1px solid #73767c;
+  //cursor: not-allowed;
+}

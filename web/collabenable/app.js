@@ -38,7 +38,7 @@ if (process.env.NODE_ENV === "dev") {
 const port = 3000;
 
 app.post("/send-data", async (req, res) => {
-  const { data, fileName } = req.body;
+  const { data, fileName, recipient } = req.body;
 
   if (!data || !Array.isArray(data)) {
     return res
@@ -51,7 +51,7 @@ app.post("/send-data", async (req, res) => {
   try {
     await transporter.sendMail({
       from: `"Collabenable" <${process.env.MAIL_FROM}>`,
-      to: process.env.MAIL_TO,
+      to: recipient,
       subject: "📊 Nouvelles données [" + fileName + "] 🎉",
       text: "De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV.",
       html: "<b style='font-family: Arial, sans-serif;'>De nouvelles données ont été générées et sont disponibles en pièce jointe au format CSV 🤩.</b>",
