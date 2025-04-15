@@ -37,9 +37,20 @@ interface ViewMode {
   label: string;
 }
 
+interface SelectTimer {
+  value: string;
+  label: string;
+}
+
 const options: ViewMode[] = [
   { value: 'forms', label: 'Formes interactives' },
   { value: 'mail', label: 'Faux client mail' },
+];
+
+const optionsTime: SelectTimer[] = [
+  { value: '-1', label: 'Aucune' },
+  { value: '60', label: '1 minute' },
+  { value: '180', label: '3 minutes' },
 ];
 
 enum InteractionType {
@@ -237,16 +248,6 @@ export const MouseMoveRecorder: FunctionComponent = () => {
     URL.revokeObjectURL(url);
   };
 
-  useEffect(() => {
-    if (isRecording.value) {
-      const interval = setInterval(() => {
-        time.setValue(time.value + 1);
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-    time.setValue(0);
-  }, [isRecording.value, time]);
-
   const stopRecord = useCallback(() => {
     if (isRecording.value) {
       isRecording.setFalse();
@@ -290,6 +291,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
   }, [isSpaceButtonClick.setFalse, onKeyboardPress]);
 
   const selectedOption = useStateful<ViewMode | null>(options[1]);
+  const selectedTimeOption = useStateful<SelectTimer | null>(optionsTime[0]);
 
   const isSendEmailLoading = useBoolean(false);
 
@@ -317,6 +319,17 @@ export const MouseMoveRecorder: FunctionComponent = () => {
   const saveSeedValue = () => {
     RandomUtils.setInitSeed(+seedData.value);
   };
+
+  useEffect(() => {
+    if (isRecording.value && selectedTimeOption.value?.value !== time.value.toString()) {
+      const interval = setInterval(() => {
+        time.setValue(time.value + 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+    stopRecord();
+    time.setValue(0);
+  }, [isRecording.value, time, selectedTimeOption, stopRecord]);
 
   return (
     <>
@@ -421,6 +434,29 @@ export const MouseMoveRecorder: FunctionComponent = () => {
                       <Select.Item value="forms">
                         Formes interactives
                       </Select.Item>
+                    </Select.Group>
+                  </Select.Content>
+                </Select.Root>
+                <p className="MouseActivityTracker__instructions">Durée: </p>
+                <Select.Root
+                  onValueChange={(val) =>
+                    selectedTimeOption.setValue(
+                      optionsTime.find((option) => option.value === val) || null
+                    )
+                  }
+                  defaultValue={selectedTimeOption.value?.value}
+                >
+                  <Select.Trigger />
+                  <Select.Content>
+                    <Select.Group >
+                      {optionsTime.map((option) => (
+                        <Select.Item
+                          key={option.value}
+                          value={option.value}
+                        >
+                          {option.label}
+                        </Select.Item>
+                      ))}
                     </Select.Group>
                   </Select.Content>
                 </Select.Root>
