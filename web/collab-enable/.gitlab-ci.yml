@@ -1,0 +1,17 @@
+stages:
+  - test
+
+variables:
+  NODE_ENV: test
+
+unit_tests:
+  stage: test
+  image: node:18
+  script:
+    - cd web/collab-enable/ # Se déplacer dans le répertoire
+    - npm install # Installer les dépendances
+    - npm run test:coverage # Lancer les tests avec la couverture
+  artifacts:
+    paths:
+      - web/collab-enable/coverage/ # Sauvegarder le dossier coverage
+    expire_in: 7 days # Garder les artefacts 7 jours
