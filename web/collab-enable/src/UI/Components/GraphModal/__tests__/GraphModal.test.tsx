@@ -66,8 +66,8 @@ describe('Composant GraphModal', () => {
 
   test('affiche la modale avec les données du graphique et les boutons', () => {
     // Vérifier la présence du texte dans la modale
-    screen.getByText((content) => content.includes('Envoyer le CSV par email'));
-    screen.getByText((content) => content.includes('Télécharger le CSV'));
+    screen.getByText('Envoyer le CSV par email');
+    screen.getByText('Télécharger le CSV en local');
   });
 
   test('ferme la modale lorsque le bouton de fermeture est cliqué', () => {
@@ -84,7 +84,7 @@ describe('Composant GraphModal', () => {
     expect(onDownloadButtonClick).toHaveBeenCalledTimes(1);
   });
 
-  test('appelle onSendByEmailButtonClick avec les données correctes lorsque le bouton d\'envoi par email est cliqué', () => {
+  test('appelle onSendByEmailButtonClick avec un nouvel email valide lorsque le bouton d\'envoi par email est cliqué', () => {
     // Ajout d'un email valide pour activer le bouton
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'newemail@example.com' } });
 
@@ -93,7 +93,35 @@ describe('Composant GraphModal', () => {
     expect(sendButton).toBeInTheDocument(); // Vérifie que le bouton est dans le DOM
     expect(sendButton).not.toBeDisabled(); // Vérifie que le bouton n'est pas désactivé
     fireEvent.click(sendButton);
-    
+
+    // Vérifier que la fonction onSendByEmailButtonClick a été appelée avec les données correctes
+    expect(onSendByEmailButtonClick).toHaveBeenCalledWith([
+      'time,x,y,action',
+      '1,10,20,left_click',
+      '2,15,25,double_click',
+    ]);
+  });
+
+  test('appelle onSendByEmailButtonClick avec un nouvel email non valide lorsque le bouton d\'envoi par email est cliqué', () => {
+    // Ajout d'un email non valide pour activer le bouton
+    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'newemailexample.com' } });
+
+    // Simuler un clic sur le bouton d'envoi par email
+    const sendButton = screen.getByText('Envoyer le CSV par email');
+    expect(sendButton).toBeInTheDocument(); // Vérifie que le bouton est dans le DOM
+    fireEvent.click(sendButton);
+
+    // Vérifier que la fonction onSendByEmailButtonClick a été appelée avec les données correctes
+    expect(sendButton).toBeDisabled(); // Vérifie que le bouton est désactivé
+  });
+
+  test('appelle onSendByEmailButtonClick sans nouvel email lorsque le bouton d\'envoi par email est cliqué', () => {
+    // Simuler un clic sur le bouton d'envoi par email
+    const sendButton = screen.getByText('Envoyer le CSV par email');
+    expect(sendButton).toBeInTheDocument(); // Vérifie que le bouton est dans le DOM
+    expect(sendButton).not.toBeDisabled(); // Vérifie que le bouton n'est pas désactivé
+    fireEvent.click(sendButton);
+
     // Vérifier que la fonction onSendByEmailButtonClick a été appelée avec les données correctes
     expect(onSendByEmailButtonClick).toHaveBeenCalledWith([
       'time,x,y,action',

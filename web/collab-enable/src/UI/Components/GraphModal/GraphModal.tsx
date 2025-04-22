@@ -31,7 +31,7 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
   email = '',
 }) => {
   // État pour valider l'email saisi
-  const [isValidEmail, setIsValidEmail] = useState(email === '');
+  const [isValidEmail, setIsValidEmail] = useState(true);
 
   // Utilisation de useMemo pour optimiser le calcul des catégories d'événements
   const events = useMemo(() => {
