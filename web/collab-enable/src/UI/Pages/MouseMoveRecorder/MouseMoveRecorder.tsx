@@ -27,6 +27,8 @@ import { FunctionComponent, useCallback, useEffect, useMemo } from 'react';
 import { useBoolean, useInput, useStateful } from 'react-hanger';
 import { Case, Else, If, Switch, Then } from 'react-if';
 
+import { InteractionContext } from '@/context/InteractionContext';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 const ITEM_WIDTH = 50;
@@ -94,6 +96,16 @@ const composeName = (seconds: number, appMode: string) => {
 };
 
 export const MouseMoveRecorder: FunctionComponent = () => {
+  const [validInteractions, setValidInteractions] = useState(-1);
+
+  const incrValidInteractions = () => {
+    setValidInteractions((prev) => prev + 1);
+  };
+
+  const resetIncrValidInteractions = () => {
+    setValidInteractions(-1);
+  };
+
   // État pour l'interaction actuelle
   const currentInteraction = useStateful<InteractionData | undefined>({
     x: 10,
@@ -122,6 +134,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
 
   // Générer une interaction aléatoire
   const generateRandomInteraction = useCallback(() => {
+    incrValidInteractions();
     const { x, y } = getRandomPosition(
       cursorTrackingAreaSize.value?.w ?? 0,
       cursorTrackingAreaSize.value?.h ?? 0
@@ -262,7 +275,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
         return;
       }
 
-      if (e.code === 'Space') {
+      if (e.code === 'Space' && !isRecording.value) {
         isSpaceButtonClick.setTrue();
         isRecording.setTrue();
         RandomUtils.resetSeed();
@@ -321,7 +334,10 @@ export const MouseMoveRecorder: FunctionComponent = () => {
   };
 
   useEffect(() => {
-    if (isRecording.value && selectedTimeOption.value?.value !== time.value.toString()) {
+    if (
+      isRecording.value &&
+      selectedTimeOption.value?.value !== time.value.toString()
+    ) {
       const interval = setInterval(() => {
         time.setValue(time.value + 1);
       }, 1000);
@@ -333,191 +349,196 @@ export const MouseMoveRecorder: FunctionComponent = () => {
 
   return (
     <>
-      <div className="MouseMoveRecorder">
-        <Navbar>
-          <Flex align="center" gap="2">
-            <If condition={isRecording.value}>
-              <Then>
-                <Text color="blue">
-                  (seed :{' '}
-                  {RandomUtils.isRandomSeed()
-                    ? 'aléatoire'
-                    : RandomUtils.getInitSeed()}
-                  )
-                </Text>
-                <Flex align="center" gap="1">
-                  <TimerView seconds={time.value} />
-                  &nbsp;
-                  <Text className="MouseActivityTracker__instructions">
-                    Appuyez sur la touche
-                  </Text>
-                  <KeyboardButton pressed={isSpaceButtonClick.value}>
-                    Échap
-                  </KeyboardButton>
-                  <Text className="MouseActivityTracker__instructions">
-                    de votre clavier pour arrêter l'enregistrement
-                  </Text>
-                </Flex>
-              </Then>
-              <Else>
-                <Dialog.Root>
-                  <Dialog.Trigger>
-                    <Button>Mettre à jour le seed</Button>
-                  </Dialog.Trigger>
-                  <Dialog.Content maxWidth="450px">
-                    <Dialog.Title>Modification de la seed</Dialog.Title>
-                    <Flex direction="column" gap="3">
-                      <Text as="label" size="2">
-                        <Flex gap="2">
-                          <SwitchWiget
-                            size="2"
-                            onCheckedChange={(val) => {
-                              if (val) {
-                                RandomUtils.activeRandom();
-                              } else {
-                                RandomUtils.disabledRandom();
-                              }
-                            }}
-                            defaultChecked={RandomUtils.isRandomSeed()}
-                          />{' '}
-                          Mettre un seed aléatoire
-                        </Flex>
-                      </Text>
-                      <div>
-                        <Text as="div" size="2" mb="1" weight="bold">
-                          Seed
-                        </Text>
-                        <TextField.Root
-                          value={
-                            RandomUtils.isRandomSeed() ? '' : seedData.value
-                          }
-                          onChange={seedData.onChange}
-                          disabled={RandomUtils.isRandomSeed()}
-                          placeholder="Un entier"
-                        />
-                      </div>
-                      <Dialog.Close>
-                        <Button onClick={saveSeedValue}>
-                          Enregistrer la modification
-                        </Button>
-                      </Dialog.Close>
-                    </Flex>
-                  </Dialog.Content>
-                </Dialog.Root>
-                <Flex gap="1" align="center">
-                  <Text className="MouseActivityTracker__instructions">
-                    Appuyez sur la touche{' '}
-                  </Text>
-                  <KeyboardButton pressed={isSpaceButtonClick.value}>
-                    Espace
-                  </KeyboardButton>
-                  <Text className="MouseActivityTracker__instructions">
-                    de votre clavier pour lancer l'enregistrement
-                  </Text>
-                </Flex>
-              </Else>
-            </If>
-            <If condition={!isRecording.value}>
-              <Then>
-                <Select.Root
-                  onValueChange={(val) =>
-                    selectedOption.setValue(
-                      options.find((option) => option.value === val) || null
-                    )
-                  }
-                  defaultValue={selectedOption.value?.value}
-                >
-                  <Select.Trigger />
-                  <Select.Content>
-                    <Select.Group>
-                      <Select.Item value="mail">Faux client mail</Select.Item>
-                      <Select.Item value="forms">
-                        Formes interactives
-                      </Select.Item>
-                    </Select.Group>
-                  </Select.Content>
-                </Select.Root>
-                <p className="MouseActivityTracker__instructions">Durée: </p>
-                <Select.Root
-                  onValueChange={(val) =>
-                    selectedTimeOption.setValue(
-                      optionsTime.find((option) => option.value === val) || null
-                    )
-                  }
-                  defaultValue={selectedTimeOption.value?.value}
-                >
-                  <Select.Trigger />
-                  <Select.Content>
-                    <Select.Group >
-                      {optionsTime.map((option) => (
-                        <Select.Item
-                          key={option.value}
-                          value={option.value}
-                        >
-                          {option.label}
-                        </Select.Item>
-                      ))}
-                    </Select.Group>
-                  </Select.Content>
-                </Select.Root>
-              </Then>
-            </If>
-          </Flex>
-        </Navbar>
-        <CursorTrackingArea
-          onSizeChange={onCursorTrackingAreaSizeChange}
-          onEvent={onEvent}
-          recording={isRecording.value}
-        >
-          <Switch>
-            <Case condition={selectedOption.value?.value === 'mail'}>
+      <InteractionContext.Provider value={{ incrValidInteractions }}>
+        <div className="MouseMoveRecorder">
+          <Navbar>
+            <Flex align="center" gap="2">
               <If condition={isRecording.value}>
                 <Then>
-                  <FakeMailApp />
+                  <Text color="blue">
+                    (seed :{' '}
+                    {RandomUtils.isRandomSeed()
+                      ? 'aléatoire'
+                      : RandomUtils.getInitSeed()}
+                    )
+                  </Text>
+                  <Flex align="center" gap="1">
+                    <TimerView seconds={time.value} />
+                    &nbsp;
+                    <Text className="MouseActivityTracker__instructions">
+                      Instruction validées:
+                    </Text>
+                    <Text color="blue">{validInteractions}</Text>
+                    &nbsp;
+                    <Text className="MouseActivityTracker__instructions">
+                      Appuyez sur la touche
+                    </Text>
+                    <KeyboardButton pressed={isSpaceButtonClick.value}>
+                      Échap
+                    </KeyboardButton>
+                    <Text className="MouseActivityTracker__instructions">
+                      de votre clavier pour arrêter l'enregistrement
+                    </Text>
+                  </Flex>
                 </Then>
                 <Else>
-                  <div className="FakeAppPlaceHolder__area">
-                    <IconMail
-                      className="icon"
-                      color="white"
-                      strokeWidth={1}
-                      size={150}
-                    />
-                  </div>
+                  <Dialog.Root>
+                    <Dialog.Trigger>
+                      <Button>Mettre à jour le seed</Button>
+                    </Dialog.Trigger>
+                    <Dialog.Content maxWidth="450px">
+                      <Dialog.Title>Modification de la seed</Dialog.Title>
+                      <Flex direction="column" gap="3">
+                        <Text as="label" size="2">
+                          <Flex gap="2">
+                            <SwitchWiget
+                              size="2"
+                              onCheckedChange={(val) => {
+                                if (val) {
+                                  RandomUtils.activeRandom();
+                                } else {
+                                  RandomUtils.disabledRandom();
+                                }
+                              }}
+                              defaultChecked={RandomUtils.isRandomSeed()}
+                            />{' '}
+                            Mettre un seed aléatoire
+                          </Flex>
+                        </Text>
+                        <div>
+                          <Text as="div" size="2" mb="1" weight="bold">
+                            Seed
+                          </Text>
+                          <TextField.Root
+                            value={
+                              RandomUtils.isRandomSeed() ? '' : seedData.value
+                            }
+                            onChange={seedData.onChange}
+                            disabled={RandomUtils.isRandomSeed()}
+                            placeholder="Un entier"
+                          />
+                        </div>
+                        <Dialog.Close>
+                          <Button onClick={saveSeedValue}>
+                            Enregistrer la modification
+                          </Button>
+                        </Dialog.Close>
+                      </Flex>
+                    </Dialog.Content>
+                  </Dialog.Root>
+                  <Flex gap="1" align="center">
+                    <Text className="MouseActivityTracker__instructions">
+                      Appuyez sur la touche{' '}
+                    </Text>
+                    <KeyboardButton pressed={isSpaceButtonClick.value}>
+                      Espace
+                    </KeyboardButton>
+                    <Text className="MouseActivityTracker__instructions">
+                      de votre clavier pour lancer l'enregistrement
+                    </Text>
+                  </Flex>
                 </Else>
               </If>
-            </Case>
-            <Case condition={selectedOption.value?.value === 'forms'}>
-              <If condition={isRecording.value}>
-                <Then>{interactionItemView}</Then>
-                <Else>
-                  <div className="FakeAppPlaceHolder__area">
-                    <IconClick
-                      className="icon"
-                      color="white"
-                      strokeWidth={1}
-                      size={150}
-                    />
-                  </div>
-                </Else>
+              <If condition={!isRecording.value}>
+                <Then>
+                  <Select.Root
+                    onValueChange={(val) =>
+                      selectedOption.setValue(
+                        options.find((option) => option.value === val) || null
+                      )
+                    }
+                    defaultValue={selectedOption.value?.value}
+                  >
+                    <Select.Trigger />
+                    <Select.Content>
+                      <Select.Group>
+                        <Select.Item value="mail">Faux client mail</Select.Item>
+                        <Select.Item value="forms">
+                          Formes interactives
+                        </Select.Item>
+                      </Select.Group>
+                    </Select.Content>
+                  </Select.Root>
+                  <p className="MouseActivityTracker__instructions">Durée: </p>
+                  <Select.Root
+                    onValueChange={(val) =>
+                      selectedTimeOption.setValue(
+                        optionsTime.find((option) => option.value === val) ||
+                          null
+                      )
+                    }
+                    defaultValue={selectedTimeOption.value?.value}
+                  >
+                    <Select.Trigger />
+                    <Select.Content>
+                      <Select.Group>
+                        {optionsTime.map((option) => (
+                          <Select.Item key={option.value} value={option.value}>
+                            {option.label}
+                          </Select.Item>
+                        ))}
+                      </Select.Group>
+                    </Select.Content>
+                  </Select.Root>
+                </Then>
               </If>
-            </Case>
-          </Switch>
-        </CursorTrackingArea>
-      </div>
-      <GraphModal
-        open={showGraphModal.value}
-        onClose={() => {
-          showGraphModal.setFalse();
-          interactions.setValue([]);
-        }}
-        data={interactions.value}
-        onDownloadButtonClick={downloadCSV}
-        onSendByEmailButtonClick={sendDataByMail}
-        loading={isSendEmailLoading.value}
-        onChangeEmail={setEmail}
-        email={email}
-      />
+            </Flex>
+          </Navbar>
+          <CursorTrackingArea
+            onSizeChange={onCursorTrackingAreaSizeChange}
+            onEvent={onEvent}
+            recording={isRecording.value}
+          >
+            <Switch>
+              <Case condition={selectedOption.value?.value === 'mail'}>
+                <If condition={isRecording.value}>
+                  <Then>
+                    <FakeMailApp />
+                  </Then>
+                  <Else>
+                    <div className="FakeAppPlaceHolder__area">
+                      <IconMail
+                        className="icon"
+                        color="white"
+                        strokeWidth={1}
+                        size={150}
+                      />
+                    </div>
+                  </Else>
+                </If>
+              </Case>
+              <Case condition={selectedOption.value?.value === 'forms'}>
+                <If condition={isRecording.value}>
+                  <Then>{interactionItemView}</Then>
+                  <Else>
+                    <div className="FakeAppPlaceHolder__area">
+                      <IconClick
+                        className="icon"
+                        color="white"
+                        strokeWidth={1}
+                        size={150}
+                      />
+                    </div>
+                  </Else>
+                </If>
+              </Case>
+            </Switch>
+          </CursorTrackingArea>
+        </div>
+        <GraphModal
+          open={showGraphModal.value}
+          onClose={() => {
+            showGraphModal.setFalse();
+            interactions.setValue([]);
+          }}
+          data={interactions.value}
+          onDownloadButtonClick={downloadCSV}
+          onSendByEmailButtonClick={sendDataByMail}
+          loading={isSendEmailLoading.value}
+          onChangeEmail={setEmail}
+          email={email}
+        />
+      </InteractionContext.Provider>
     </>
   );
 };

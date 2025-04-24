@@ -8,6 +8,7 @@ import { useArray, useBoolean, useInput, useStateful } from 'react-hanger'
 import { Else, If, Then } from 'react-if'
 
 import { Mail, MailItem, NewMail } from './slices'
+import { useInteraction } from '@/context/InteractionContext'
 
 // Définir l'interface FakeEmail
 interface FakeEmail {
@@ -111,6 +112,8 @@ interface MissionData {
 }
 
 export const FakeMailApp: FunctionComponent = () => {
+  const { incrValidInteractions } = useInteraction()
+console.log("IncrValid: ",incrValidInteractions)
   const selectedMail = useStateful<FakeEmail | null>(null)
   const fakeMails = useArray(FAKE_MAILS)
   const resolutionsStack = useArray<ResolutionStack>([])
@@ -129,6 +132,7 @@ export const FakeMailApp: FunctionComponent = () => {
 
   // Générer une mission aléatoire
   const generateRandomMission = useCallback(() => {
+    incrValidInteractions();
     const randomTaskIndex = Math.floor(RandomUtils.getNumber() * tasks.length)
     let task: Task = 'email_send'
     if (fakeMails.value.length > 0) {
@@ -155,7 +159,7 @@ export const FakeMailApp: FunctionComponent = () => {
       type: task,
       label: "Cliquez sur l'aide",
     }
-  }, [fakeMails.value])
+  }, [fakeMails.value, incrValidInteractions])
 
   const missionData = useStateful<MissionData>(generateRandomMission())
 
