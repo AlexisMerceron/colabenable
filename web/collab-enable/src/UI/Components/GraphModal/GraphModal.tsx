@@ -1,7 +1,7 @@
 import './GraphModal.scss';
 
 import type { CursorAction } from '@components/CursorTrackingArea';
-import { Button, TextField, Theme } from '@radix-ui/themes';
+import { Button, Text, TextField, Theme } from '@radix-ui/themes';
 import { IconDownload, IconSend, IconX } from '@tabler/icons-react';
 import ReactECharts from 'echarts-for-react';
 import { FunctionComponent,useMemo, useState } from 'react';
@@ -17,6 +17,8 @@ interface GraphModalProps {
   loading?: boolean; // Indique si une action est en cours de chargement
   onChangeEmail?: (email: string) => void; // Callback pour gérer les changements de l'email
   email?: string; // Email saisi dans le champ de texte
+  recordedTime?: number; // Temps enregistré
+  recordedValidInteractions?: number; // Nombre d'interactions valides enregistrées
 }
 
 // Composant principal GraphModal
@@ -29,6 +31,8 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
   loading = false,
   onChangeEmail,
   email = '',
+  recordedTime,
+  recordedValidInteractions
 }) => {
   // État pour valider l'email saisi
   const [isValidEmail, setIsValidEmail] = useState(true);
@@ -159,6 +163,9 @@ export const GraphModal: FunctionComponent<GraphModalProps> = ({
               >
                 <IconDownload size={18} /> Télécharger le CSV en local
               </Button>
+              <Text className='GraphModal__header__left--text'>
+                {recordedValidInteractions} interactions validées en {recordedTime} secondes
+              </Text>
             </div>
             {/* Bouton pour fermer la modale */}
             <button

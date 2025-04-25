@@ -80,24 +80,28 @@ const getRandomPosition = (maxX: number, maxY: number) => {
 }
 
 // Composer un nom de fichier basé sur l'heure actuelle, les secondes formatées et le mode de l'application
-const composeName = (seconds: number, appMode: string) => {
+const composeName = (seconds: number, appMode: string, validInteractions: number) => {
   const timestamp = Date.now()
   const formattedTime = TimeUtils.formatSeconds(seconds)
   const seedPart = RandomUtils.isRandomSeed() ? '' : `seed-${RandomUtils.getInitSeed()}_`
 
-  return `${timestamp}_${seedPart}${formattedTime}_${appMode}_interactions.csv`
+  return `${timestamp}_${seedPart}${formattedTime}_${appMode}_${validInteractions}_interactions.csv`
 }
 
 export const MouseMoveRecorder: FunctionComponent = () => {
-  const [validInteractions, setValidInteractions] = useState(-1)
+  // État pour le nombre d'interactions valides
+  const [validInteractions, setValidInteractions] = useState(0)
+  const [recordedValidInteractions, setRecordedValidInteractions] = useState(0)
 
-  const incrValidInteractions = () => {
+  // Incrémente le nombre d'interactions valides
+  const incrValidInteractions = useCallback(() => {
     setValidInteractions((prev) => prev + 1)
-  }
+  },[])
 
-  const resetIncrValidInteractions = () => {
-    setValidInteractions(-1)
-  }
+  // Réinitialise le nombre d'interactions valides
+  const resetIncrValidInteractions = useCallback(() => {
+    setValidInteractions(0)
+  },[])
 
   // État pour l'interaction actuelle
   const currentInteraction = useStateful<InteractionData | undefined>({
@@ -162,6 +166,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
             x={currentInteraction.value.x}
             y={currentInteraction.value.y}
             onResolve={generateRandomInteraction}
+            incrValidInteractions={incrValidInteractions}
             type="left"
           />
         )
@@ -172,6 +177,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
             x={currentInteraction.value.x}
             y={currentInteraction.value.y}
             onResolve={generateRandomInteraction}
+            incrValidInteractions={incrValidInteractions}
             type="double"
           />
         )
@@ -182,6 +188,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
             x={currentInteraction.value.x}
             y={currentInteraction.value.y}
             onResolve={generateRandomInteraction}
+            incrValidInteractions={incrValidInteractions}
             type="right"
           />
         )
@@ -197,6 +204,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
                 x={currentInteraction.value.xEnd}
                 y={currentInteraction.value.yEnd}
                 onResolve={generateRandomInteraction}
+                incrValidInteractions={incrValidInteractions}
                 type="dragEnd"
               />
               <ClickItem
@@ -211,8 +219,8 @@ export const MouseMoveRecorder: FunctionComponent = () => {
         return null
       default:
         return null
-    }
-  }, [currentInteraction.value, generateRandomInteraction])
+    };
+  }, [currentInteraction.value, generateRandomInteraction, incrValidInteractions])
 
   const debug = useStateful('')
   const [email, setEmail] = useState('')
@@ -239,7 +247,7 @@ export const MouseMoveRecorder: FunctionComponent = () => {
 
     const a = document.createElement('a')
     a.href = url
-    a.download = composeName(recordedTime.value, selectedOption.value?.value ?? '')
+    a.download = composeName(recordedTime.value, selectedOption.value?.value ?? '', recordedValidInteractions)
     a.click()
 
     URL.revokeObjectURL(url)
@@ -249,9 +257,11 @@ export const MouseMoveRecorder: FunctionComponent = () => {
     if (isRecording.value) {
       isRecording.setFalse()
       recordedTime.setValue(time.value)
+      setRecordedValidInteractions(validInteractions)
+      resetIncrValidInteractions()
       showGraphModal.setTrue()
     }
-  }, [isRecording, recordedTime, time.value, showGraphModal])
+  }, [isRecording, recordedTime, time.value, showGraphModal, setRecordedValidInteractions, validInteractions,resetIncrValidInteractions])
 
   const onKeyboardPress = useCallback(
     (e: KeyboardEvent) => {
@@ -475,6 +485,8 @@ export const MouseMoveRecorder: FunctionComponent = () => {
         loading={isSendEmailLoading.value}
         onChangeEmail={setEmail}
         email={email}
+        recordedTime={recordedTime.value}
+        recordedValidInteractions={recordedValidInteractions}
       />
     </>
   )

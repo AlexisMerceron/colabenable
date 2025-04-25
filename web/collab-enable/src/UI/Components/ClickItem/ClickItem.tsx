@@ -7,14 +7,22 @@ interface ClickItemProps {
   x: number
   y: number
   onResolve?: () => void
+  incrValidInteractions?: () => void
   type: 'left' | 'right' | 'double' | 'dragStart' | 'dragEnd'
 }
 
-export const ClickItem: FunctionComponent<ClickItemProps> = ({ x, y, onResolve, type }) => {
+export const ClickItem: FunctionComponent<ClickItemProps> = ({ x, y, onResolve, incrValidInteractions, type }) => {
+  // Incrémente le nombre d'interactions valides si incrValidInteractions est fourni
+  // et appelle la fonction de résolution si elle est fournie
+  const resolveInteraction = () => {
+    incrValidInteractions?.()
+    onResolve?.()
+  }
+
   // Empêche le menu contextuel par défaut et appelle onResolve si le type est "right"
   const onContextMenu = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault()
-    if (type === 'right') onResolve?.()
+    if (type === 'right') resolveInteraction()
   }
 
   // Retourne le nom de la classe CSS en fonction du type de clic
@@ -66,15 +74,15 @@ export const ClickItem: FunctionComponent<ClickItemProps> = ({ x, y, onResolve, 
   // Gère le dépôt de l'élément et appelle onResolve
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault()
-    onResolve?.()
+   resolveInteraction()
   }
 
   // Retourne les gestionnaires d'événements appropriés en fonction du type de clic
   const getClickHandler = () => {
     const handlers: Record<string, unknown> = {
-      left: { onClick: onResolve },
+      left: { onClick: resolveInteraction },
       right: {},
-      double: { onDoubleClick: onResolve },
+      double: { onDoubleClick: resolveInteraction },
       dragStart: {
         onDragStart: handleDragStart,
         onDragEnd: handleDragEnd,
