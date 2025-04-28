@@ -110,7 +110,11 @@ interface MissionData {
   payload?: string
 }
 
-export const FakeMailApp: FunctionComponent = () => {
+interface FakeMailAppProps {
+  incrValidInteractions: () => void
+}
+
+export const FakeMailApp: FunctionComponent<FakeMailAppProps> = ({ incrValidInteractions }) => {
   const selectedMail = useStateful<FakeEmail | null>(null)
   const fakeMails = useArray(FAKE_MAILS)
   const resolutionsStack = useArray<ResolutionStack>([])
@@ -192,59 +196,67 @@ export const FakeMailApp: FunctionComponent = () => {
 
   // Gérer l'accomplissement de la tâche
   const onTask = (task: Task, payload?: FakeEmail) => {
-    if (missionData.value.type === task && (task === 'help_click' || payload?.fullName?.toLocaleLowerCase() === missionData.value.payload?.toLocaleLowerCase())) {
-      missionData.setValue(generateRandomMission());
-      computeTaskScore();
+    if (
+      missionData.value.type === task &&
+      (task === 'help_click' ||
+        payload?.fullName?.toLocaleLowerCase() === missionData.value.payload?.toLocaleLowerCase())
+    ) {
+      incrValidInteractions()
+      missionData.setValue(generateRandomMission())
+      computeTaskScore()
     }
-  };
+  }
 
   const replyMessage = useInput()
 
   // Gérer l'envoi d'une réponse
   const onSendReplyClick = () => {
-    if (!selectedMail.value || !replyMessage.value.trim()) return;
-  
-    const updatedMails = fakeMails.value.map(mail =>
+    if (!selectedMail.value || !replyMessage.value.trim()) return
+
+    const updatedMails = fakeMails.value.map((mail) =>
       mail.id === selectedMail.value?.id
-        ? { ...mail, reponses: [...mail.reponses, { message: replyMessage.value, id: String(Date.now()) }] }
-        : mail
-    );
-  
-    fakeMails.setValue(updatedMails);
-    selectedMail.setValue(updatedMails.find(mail => mail.id === selectedMail.value?.id) || null);
-    replyMessage.setValue('');
-    isReplyMode.setFalse();
-    onTask('email_reply', selectedMail.value);
-  };
+        ? {
+            ...mail,
+            reponses: [...mail.reponses, { message: replyMessage.value, id: String(Date.now()) }],
+          }
+        : mail,
+    )
+
+    fakeMails.setValue(updatedMails)
+    selectedMail.setValue(updatedMails.find((mail) => mail.id === selectedMail.value?.id) || null)
+    replyMessage.setValue('')
+    isReplyMode.setFalse()
+    onTask('email_reply', selectedMail.value)
+  }
 
   // Calculer le score basé sur la pile de résolutions
   const score = useMemo(() => {
-    if (!resolutionsStack.value.length) return 0;
-  
+    if (!resolutionsStack.value.length) return 0
+
     const penaltyMap: Record<string, { limit: number; factor: number }> = {
       email_send: { limit: 20, factor: 0.05 },
       email_delete: { limit: 10, factor: 0.2 },
       email_open: { limit: 5, factor: 0.2 },
       help_click: { limit: 5, factor: 0.25 },
       email_reply: { limit: 15, factor: 0.067 },
-    };
-  
+    }
+
     const rawScore = resolutionsStack.value.reduce((acc, resolution) => {
-      const durationInSeconds = (resolution.endTime - resolution.startTime) / 1000;
-      const penalty = penaltyMap[resolution.type];
-  
+      const durationInSeconds = (resolution.endTime - resolution.startTime) / 1000
+      const penalty = penaltyMap[resolution.type]
+
       if (penalty) {
-        const excess = Math.max(0, durationInSeconds - penalty.limit);
-        const taskScore = Math.max(0, 1 - excess * penalty.factor);
-        return acc + taskScore;
+        const excess = Math.max(0, durationInSeconds - penalty.limit)
+        const taskScore = Math.max(0, 1 - excess * penalty.factor)
+        return acc + taskScore
       }
-  
-      return acc + 1;
-    }, 0);
-  
-    const normalizedScore = (rawScore / resolutionsStack.value.length) * 20;
-    return Math.round(Math.min(Math.max(normalizedScore, 0), 20));
-  }, [resolutionsStack.value]);
+
+      return acc + 1
+    }, 0)
+
+    const normalizedScore = (rawScore / resolutionsStack.value.length) * 20
+    return Math.round(Math.min(Math.max(normalizedScore, 0), 20))
+  }, [resolutionsStack.value])
 
   return (
     <div className="FakeMailApp">
@@ -259,9 +271,6 @@ export const FakeMailApp: FunctionComponent = () => {
 
         <div
           onClick={() => {
-            alert(
-              "Lorem Ipsum est simplement du faux texte de l'industrie de l'imprimerie et de la composition. Lorem Ipsum est le faux texte standard de l'industrie depuis les années 1500.",
-            )
             onTask('help_click')
           }}
           className="FakeMailApp__header__help--icon"
